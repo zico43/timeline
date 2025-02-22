@@ -533,7 +533,7 @@
         import { getDatabase, ref, get, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY", // Replace with your actual API key
+            apiKey: "YOUR_API_KEY",
             authDomain: "cronologias-ce797.firebaseapp.com",
             databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
             projectId: "cronologias-ce797",
@@ -605,53 +605,62 @@
                 if (eventosSnapshot.exists()) {
                     eventosSnapshot.forEach((childSnapshot) => {
                          if (childSnapshot) { // *** ADDED CHECK: Check if childSnapshot exists
-                            const event = childSnapshot.val();
-                            if (event && event.itemId) {
+                            const currentEvent = childSnapshot.val();
+                            if (currentEvent && currentEvent.itemId) {
                                 // Defensive initialization of itemEvents entry if it doesn't exist
-                                if (!itemEvents.has(event.itemId)) {
-                                    itemEvents.set(event.itemId, []);
+                                if (!itemEvents.has(currentEvent.itemId)) {
+                                    itemEvents.set(currentEvent.itemId, []);
                                 }
-                                itemEvents.get(event.itemId).push({
-                                    date: event.date,
-                                    name: event.name
+                                itemEvents.get(currentEvent.itemId).push({
+                                    date: currentEvent.date,
+                                    name: currentEvent.name
                                 });
                             } else {
-                                console.warn("Event data is missing itemId or is null/undefined:", event);
+                                console.warn("Event data is missing itemId or is null/undefined:", currentEvent);
                             }
                         } else {
                             console.warn("Child snapshot is unexpectedly null or undefined in eventos loop."); // Added warning
                         }
                     });
                 }
+
+                console.log("itemEvents after loadData:", itemEvents); // *** ENSURE LOG IS HERE ***
+
             } catch (error) {
                 console.error('Error loading data:', error);
             }
         }
 
 
-        function getDateRange(dates) {
-            console.log("getDateRange CALLED with dates:", dates); // DEBUG - input dates
+        function getDateRange(dates, type) {
+            console.log("getDateRange CALLED with dates:", dates, "and type:", type);
 
             if (!dates || dates.length === 0) return '';
 
-            // For personalities
             const birthEvent = dates.find(date => date.name && date.name.toLowerCase().includes('nascimento'));
             const deathEvent = dates.find(date => date.name && date.name.toLowerCase().includes('falecimento'));
+            const currentYear = '2025'; // Define current year
 
-            let birthYear, deathYear, earliestYear, latestYear; // Declare variables here
-
-            if (birthEvent) {
-                birthYear = birthEvent.date.split('-').pop();
-                deathYear = deathEvent ? deathEvent.date.split('-').pop() : 'Presente';
-                console.log("getDateRange - Personality - birthYear:", birthYear, "deathYear:", deathYear); // DEBUG - personality dates
-                return `(${birthYear} - ${deathYear})`;
-            } else {
-                const sortedDates = [...dates].sort((a, b) => a.date.localeCompare(b.date)); // Sort dates
-                earliestYear = sortedDates[0].date.split('-').pop();
-                latestYear = sortedDates[sortedDates.length - 1].date.split('-').pop();
-                console.log("getDateRange - Acontecimento - earliestYear:", earliestYear, "latestYear:", latestYear); // DEBUG - acontecimento dates
-                return earliestYear === latestYear ? `(${earliestYear})` : `(${earliestYear} - ${latestYear})`;
+            if (type === 'personalidade') {
+                if (birthEvent) {
+                    const birthYear = birthEvent.date.split('-').pop();
+                    const deathYear = deathEvent ? deathEvent.date.split('-').pop() : 'Presente';
+                    return `(${birthYear} - ${deathYear})`;
+                }
             }
+
+            // For acontecimentos, use the actual date range without defaulting to current year
+            const sortedDates = dates
+                .filter(d => d.date)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            if (sortedDates.length > 0) {
+                const firstYear = sortedDates[0].date.split('-').pop();
+                const lastYear = sortedDates[sortedDates.length - 1].date.split('-').pop();
+                return `(${firstYear} - ${lastYear})`;
+            }
+
+            return '';
         }
 
 
@@ -681,24 +690,27 @@
                     item.name && item.name.toLowerCase().includes(searchText)
                 );
 
-                searchResults[index].innerHTML = '';
+                searchResults[index].innerHTML = ''; // Clear previous results
                 if (filteredItems.length > 0) {
                     filteredItems.forEach(item => {
                         const div = document.createElement('div');
                         div.className = 'search-result-item';
 
+                        // Result Header
                         const info = document.createElement('div');
                         info.className = 'result-info';
 
+                        // Item Name and Date Range
                         const name = document.createElement('div');
                         name.className = 'result-name';
                         name.textContent = item.name;
+
 
                         const type = document.createElement('span');
                         type.className = 'result-type';
                         type.textContent = item.type === 'personalidade' ? 'Personalidade' : 'Acontecimento';
 
-                        const dateRange = getDateRange(itemEvents.get(item.id));
+                        const dateRange = getDateRange(itemEvents.get(item.id));  // Get date range based on item type
                         if (dateRange) {
                             const dateSpan = document.createElement('span');
                             dateSpan.className = 'result-date';
@@ -710,15 +722,18 @@
                         info.appendChild(type);
                         div.appendChild(info);
 
+
+                        // Add click event listener to show details
                         div.addEventListener('click', () => {
-                    const itemName = div.querySelector('.result-name').textContent.split('(')[0].trim();
-                    const selectedItem = allItems.find(item => item.name === itemName);
-                    if (selectedItem) {
-                        createSelectedCard(selectedItem, index + 1);
-                        searchInput.value = '';
-                        searchResults[index].style.display = 'none';
-                    }
-                });
+                            const itemName = div.querySelector('.result-name').textContent.split('(')[0].trim(); // Extract item name, removing date range
+                            const selectedItem = allItems.find(item => item.name === itemName);
+
+                            if(selectedItem){
+                                createSelectedCard(selectedItem, index + 1);
+                                searchInput.value = ''; // Clear the search input
+                                searchResults[index].style.display = 'none'; // Hide search results
+                            }
+                        });
 
                         searchResults[index].appendChild(div);
                     });
@@ -726,73 +741,97 @@
                 } else {
                     searchResults[index].style.display = 'none';
                 }
+
             });
         });
 
         document.addEventListener('click', (e) => {
             searchInputs.forEach((searchInput, index) => {
-                if (!searchInput.contains(e.target) && !searchResults[index].contains(e.target)) {
-                    searchResults[index].style.display = 'none';
+            if (!searchInput.contains(e.target) && !searchResults[index].contains(e.target)) {
+                searchResults[index].style.display = 'none';
                 }
             });
         });
-
         function updateTimeline() {
             const timeline = document.querySelector('.timeline');
             const startDateEl = document.querySelector('.timeline-start-date');
             const endDateEl = document.querySelector('.timeline-end-date');
 
+            // Clear any existing overlays and date labels
             timeline.querySelectorAll('.timeline-overlay').forEach(overlay => overlay.remove());
             timeline.querySelectorAll('.timeline-dashed-line').forEach(line => line.remove());
             timeline.querySelectorAll('.timeline-date-label').forEach(label => label.remove());
 
-            let allSelectedDates = []; // Array to hold dates from ALL selected cards
+            let allSelectedDates = [];
+
+            const currentYear = 2025; // Set fixed current year
 
             for (let i = 1; i <= 4; i++) {
                 const selectedCard = document.getElementById(`selectedCard${i}`).querySelector('.selected-item-card');
                 if (selectedCard) {
                     const dates = selectedCard.dataset.dates.split(',');
                     const startYear = parseInt(dates[0]);
-                    const endYear = parseInt(dates[1]);
+                    let endYear = dates[1]; // Get the endDate string from dataset
+                    const datasetEndDate = dates[1]; // Keep the datasetEndDate for logging
+
+                    console.log("Dates from dataset (updateTimeline):", dates, "startYear:", startYear, "datasetEndDate:", datasetEndDate);
+                    if (datasetEndDate === 'Presente' || !isNaN(parseInt(datasetEndDate))) {
+                        if (datasetEndDate === 'Presente') {
+                            endYear = currentYear;
+                            console.log("datasetEndDate is 'Presente', endYear set to:", endYear);
+                        } else {
+                            endYear = parseInt(datasetEndDate);
+                            console.log("Using specific end year:", endYear);
+                        }
+                    }
+
                     if (!isNaN(startYear) && !isNaN(endYear)) {
-                        allSelectedDates.push({ start: startYear, end: endYear, index: i }); // Add to ALL dates array
+                        allSelectedDates.push({ start: startYear, end: endYear, index: i });
                     } else {
                         console.warn("Invalid dates found in card data:", selectedCard.dataset.dates);
                     }
                 }
             }
-
-            console.log('allSelectedDates Array:', allSelectedDates); // Log ALL dates collected
-
-            if (allSelectedDates.length > 0) { // Use ALL dates array for min/max calculation
-                const minYear = Math.min(...allSelectedDates.map(d => d.start));
-                const maxYear = Math.max(...allSelectedDates.map(d => d.end));
-
-                console.log('Calculated minYear (GLOBAL):', minYear, 'maxYear (GLOBAL):', maxYear); // Log GLOBAL minYear/maxYear
-
+             console.log('allSelectedDates Array:', allSelectedDates);
+            if (allSelectedDates.length > 0) {
+                let minYear = Math.min(...allSelectedDates.map(d => d.start));
+                let maxYear = Math.max(...allSelectedDates.map(d => d.end));
+                
+                // Ensure we have a minimum range for visualization
+                if (minYear === maxYear) {
+                    maxYear = minYear + 1; // Add 1 year range for better visualization
+                }
+                
+                console.log('Calculated minYear (GLOBAL):', minYear, 'maxYear (GLOBAL):', maxYear);
+                
                 startDateEl.textContent = minYear;
                 endDateEl.textContent = maxYear;
+                
+                allSelectedDates.forEach(date => {
+                    console.log('Processing Date:', date, 'minYear:', minYear, 'maxYear:', maxYear); // Log date and timeline range
 
-                allSelectedDates.forEach(date => { // Iterate through ALL dates for overlay creation
-                    console.log('Processing Date:', date, 'minYear:', minYear, 'maxYear:', maxYear);
                     const overlay = document.createElement('div');
                     overlay.className = `timeline-overlay timeline-overlay-${date.index}`;
                     const startPercent = ((date.start - minYear) / (maxYear - minYear)) * 100;
                     const endPercent = ((date.end - minYear) / (maxYear - minYear)) * 100;
 
+                    console.log('Date:', date, 'startYear:', date.start, 'endYear:', date.end, 'startPercent:', startPercent, 'endPercent:', endPercent); // *** ADICIONEI ESTA LOG ***
+
                     if (!isNaN(startPercent) && !isNaN(endPercent)) {
-                        console.log('Start Percent:', startPercent, 'End Percent:', endPercent);
                         overlay.style.left = `${startPercent}%`;
 
+                        // Ensure that if start and end are the same we get a min width.
                         let calculatedWidth = endPercent - startPercent;
-                        const minLineWidth = 1;
-                        if (calculatedWidth < minLineWidth) {
+                        const minLineWidth = 1; // You can adjust this
+                        if(calculatedWidth < minLineWidth){
                             calculatedWidth = minLineWidth;
                         }
+
                         overlay.style.width = `${calculatedWidth}%`;
 
                         timeline.appendChild(overlay);
 
+                         // Add dashed line and label for start year
                         const startLine = document.createElement('div');
                         startLine.className = 'timeline-dashed-line';
                         startLine.style.left = `${startPercent}%`;
@@ -801,11 +840,11 @@
                         const startLabel = document.createElement('div');
                         startLabel.className = 'timeline-date-label';
                         startLabel.textContent = date.start + ' d.C';
-                        overlay.appendChild(startLabel); // Append label to overlay, not timeline!
-                        startLabel.style.left = `0%`;
+                        overlay.appendChild(startLabel); // Append label to overlay
+                        startLabel.style.left = `0%`; // Position at the start of the overlay
                         startLabel.style.transform = `translateX(0%) translateY(-30px)`;
 
-
+                        // Add dashed line and label for end year
                         const endLine = document.createElement('div');
                         endLine.className = 'timeline-dashed-line';
                         endLine.style.left = `${endPercent}%`;
@@ -814,46 +853,68 @@
                         const endLabel = document.createElement('div');
                         endLabel.className = 'timeline-date-label';
                         endLabel.textContent = date.end + ' d.C';
-                        overlay.appendChild(endLabel); // Append label to overlay, not timeline!
+                        overlay.appendChild(endLabel); // Append label to overlay!
                         endLabel.style.left = `100%`;
                         endLabel.style.transform = `translateX(-100%) translateY(-30px)`;
-
 
                     } else {
                         console.warn("Invalid percentage values calculated for date:", date);
                     }
                 });
-            } else {
+
+            }
+             else
+             {
                 startDateEl.textContent = '1850';
                 endDateEl.textContent = '2040';
             }
         }
-
         function createSelectedCard(item, searchIndex) {
-            console.log("createSelectedCard CALLED for item:", item); // DEBUG - function call
-            console.log("itemEvents Map:", itemEvents); // DEBUG - itemEvents map content
+            console.log("createSelectedCard CALLED for item:", item);
+            console.log("itemEvents Map:", itemEvents);
             const dates = itemEvents.get(item.id);
-            console.log("Dates retrieved from itemEvents for item.id", item.id, ":", dates); // DEBUG - dates retrieval
+            console.log("Dates retrieved from itemEvents for item.id", item.id, ":", dates);
 
-            const dateRange = getDateRange(dates);
+            const dateRange = getDateRange(dates, item.type);
             let startYear = null;
             let endYear = null;
+            let datasetEndDate = null;
 
             if (dates && dates.length > 0) {
+                console.log("Processing dates for item:", item.id);
                 startYear = parseInt(dates[0].date.split('-').pop());
-                endYear = dates.length > 1 ?
-                    (dates[dates.length - 1].date.split('-').pop() === 'Presente' ?
-                        new Date().getFullYear() :
-                        parseInt(dates[dates.length - 1].date.split('-').pop())) :
-                    startYear;
+                const lastDate = dates[dates.length - 1].date.split('-').pop();
+                console.log("Last date found:", lastDate);
+                
+                if (item.type === 'acontecimento') {
+                    endYear = parseInt(lastDate);
+                    datasetEndDate = lastDate;
+                    console.log("Using last event date for acontecimento:", endYear);
+                } else {
+                    // For personalidades, keep the existing logic
+                    const deathEvent = dates.find(date => date.name && date.name.toLowerCase().includes('falecimento'));
+                    console.log("Death event found:", deathEvent);
+                    
+                    if (deathEvent) {
+                        endYear = deathEvent.date.split('-').pop();
+                        datasetEndDate = deathEvent.date;
+                        console.log("Using death event date:", endYear);
+                    } else {
+                        endYear = new Date().getFullYear();
+                        datasetEndDate = 'Presente';
+                        console.log("No death event found, using current year:", endYear);
+                    }
+                }
             } else {
                 console.warn("No dates found for item:", item);
             }
 
+            console.log("Dates in createSelectedCard:", dates, "startYear:", startYear, "endYear:", endYear, "datasetEndDate:", datasetEndDate); // ADD LOG HERE - LOG in createSelectedCard!
 
             const card = document.createElement('div');
             card.className = 'selected-item-card';
-            card.dataset.dates = `${startYear},${endYear}`;
+            card.dataset.dates = `${startYear},${datasetEndDate}`; // Set start and end year for the timeline
+
 
             card.innerHTML = `
                 <button class="card-close-button" onclick="removeCard(${searchIndex})">×</button>
@@ -868,20 +929,22 @@
             `;
 
             const selectedCardContainer = document.getElementById(`selectedCard${searchIndex}`);
-            selectedCardContainer.innerHTML = '';
+            selectedCardContainer.innerHTML = ''; // Clear previous card content
             selectedCardContainer.appendChild(card);
-
             updateTimeline();
         }
+
 
         function removeCard(searchIndex) {
             const selectedCardContainer = document.getElementById(`selectedCard${searchIndex}`);
-            selectedCardContainer.innerHTML = '';
-            updateTimeline();
+            selectedCardContainer.innerHTML = ''; // Clear the card
+            updateTimeline(); // Update the timeline after removing
         }
+
         window.removeCard = removeCard;
 
         await loadData();
+
     </script>
 </body>
 </html>
