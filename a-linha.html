@@ -609,7 +609,7 @@
                             if (event && event.itemId) {
                                 // Defensive initialization of itemEvents entry if it doesn't exist
                                 if (!itemEvents.has(event.itemId)) {
-                                    itemEvents.set(event.itemId, []);
+                                    itemEvents.set(itemEvents.itemId, []);
                                 }
                                 itemEvents.get(event.itemId).push({
                                     date: event.date,
@@ -630,25 +630,30 @@
 
 
         function getDateRange(dates) {
+            console.log("getDateRange CALLED with dates:", dates); // DEBUG - input dates
+
             if (!dates || dates.length === 0) return '';
 
             // For personalities
             const birthEvent = dates.find(date => date.name && date.name.toLowerCase().includes('nascimento'));
             const deathEvent = dates.find(date => date.name && date.name.toLowerCase().includes('falecimento'));
 
+            let birthYear, deathYear, earliestYear, latestYear; // Declare variables here
+
             if (birthEvent) {
-                // For personalities, show birth-death years
-                const birthYear = birthEvent.date.split('-').pop();
-                const deathYear = deathEvent ? deathEvent.date.split('-').pop() : 'Presente';
+                birthYear = birthEvent.date.split('-').pop();
+                deathYear = deathEvent ? deathEvent.date.split('-').pop() : new Date().getFullYear().toString(); // Get current year dynamically!
+                console.log("getDateRange - Personality - birthYear:", birthYear, "deathYear:", deathYear); // DEBUG - personality dates
                 return `(${birthYear} - ${deathYear})`;
             } else {
-                // For historical events, show earliest-latest years
-                const sortedDates = dates.sort((a, b) => a.date.localeCompare(b.date));
-                const earliestYear = sortedDates[0].date.split('-').pop();
-                const latestYear = sortedDates[sortedDates.length - 1].date.split('-').pop();
+                const sortedDates = [...dates].sort((a, b) => a.date.localeCompare(b.date)); // Sort dates
+                earliestYear = sortedDates[0].date.split('-').pop();
+                latestYear = sortedDates[sortedDates.length - 1].date.split('-').pop();
+                console.log("getDateRange - Acontecimento - earliestYear:", earliestYear, "latestYear:", latestYear); // DEBUG - acontecimento dates
                 return earliestYear === latestYear ? `(${earliestYear})` : `(${earliestYear} - ${latestYear})`;
             }
         }
+
 
         // Initialize search functionality for all search bars
         const searchInputs = [
@@ -741,56 +746,53 @@
             timeline.querySelectorAll('.timeline-dashed-line').forEach(line => line.remove());
             timeline.querySelectorAll('.timeline-date-label').forEach(label => label.remove());
 
-            let selectedDates = [];
+            let allSelectedDates = []; // Array to hold dates from ALL selected cards
 
             for (let i = 1; i <= 4; i++) {
                 const selectedCard = document.getElementById(`selectedCard${i}`).querySelector('.selected-item-card');
                 if (selectedCard) {
                     const dates = selectedCard.dataset.dates.split(',');
                     const startYear = parseInt(dates[0]);
-                    const endYear = dates[1] === 'Presente' ? new Date().getFullYear() : parseInt(dates[1]);
-                     if (!isNaN(startYear) && !isNaN(endYear)) { // *** ADDED DATE VALIDATION ***
-                        selectedDates.push({ start: startYear, end: endYear, index: i });
+                    const endYear = parseInt(dates[1]);
+                    if (!isNaN(startYear) && !isNaN(endYear)) {
+                        allSelectedDates.push({ start: startYear, end: endYear, index: i }); // Add to ALL dates array
                     } else {
-                        console.warn("Invalid dates found in card data:", selectedCard.dataset.dates); // Warn about invalid dates
+                        console.warn("Invalid dates found in card data:", selectedCard.dataset.dates);
                     }
                 }
             }
 
-            console.log('selectedDates Array at start of updateTimeline:', selectedDates); // *** DEBUG LOG: Log selectedDates at function start ***
+            console.log('allSelectedDates Array:', allSelectedDates); // Log ALL dates collected
 
-            if (selectedDates.length > 0) {
-                const minYear = Math.min(...selectedDates.map(d => d.start));
-                const maxYear = Math.max(...selectedDates.map(d => d.end));
+            if (allSelectedDates.length > 0) { // Use ALL dates array for min/max calculation
+                const minYear = Math.min(...allSelectedDates.map(d => d.start));
+                const maxYear = Math.max(...allSelectedDates.map(d => d.end));
 
-                console.log('Calculated minYear:', minYear, 'maxYear:', maxYear); // *** DEBUG LOG: Log minYear and maxYear ***
+                console.log('Calculated minYear (GLOBAL):', minYear, 'maxYear (GLOBAL):', maxYear); // Log GLOBAL minYear/maxYear
 
                 startDateEl.textContent = minYear;
                 endDateEl.textContent = maxYear;
 
-                selectedDates.forEach(date => {
-                    console.log('Processing Date:', date, 'minYear:', minYear, 'maxYear:', maxYear); // *** DEBUG LOG: Log date and timeline range ***
+                allSelectedDates.forEach(date => { // Iterate through ALL dates for overlay creation
+                    console.log('Processing Date:', date, 'minYear:', minYear, 'maxYear:', maxYear);
                     const overlay = document.createElement('div');
                     overlay.className = `timeline-overlay timeline-overlay-${date.index}`;
                     const startPercent = ((date.start - minYear) / (maxYear - minYear)) * 100;
                     const endPercent = ((date.end - minYear) / (maxYear - minYear)) * 100;
 
-                    if (!isNaN(startPercent) && !isNaN(endPercent)) { // *** ADDED PERCENTAGE VALIDATION ***
+                    if (!isNaN(startPercent) && !isNaN(endPercent)) {
                         console.log('Start Percent:', startPercent, 'End Percent:', endPercent);
                         overlay.style.left = `${startPercent}%`;
 
                         let calculatedWidth = endPercent - startPercent;
-                        // Ensure a minimum width for the overlay, even if dates are the same
-                        const minLineWidth = 1; // Adjust this value as needed (in percentage)
+                        const minLineWidth = 1;
                         if (calculatedWidth < minLineWidth) {
                             calculatedWidth = minLineWidth;
                         }
                         overlay.style.width = `${calculatedWidth}%`;
 
-                        console.log('Overlay Element:', overlay);
                         timeline.appendChild(overlay);
 
-                        // Linha e rótulo para o ano de início
                         const startLine = document.createElement('div');
                         startLine.className = 'timeline-dashed-line';
                         startLine.style.left = `${startPercent}%`;
@@ -799,12 +801,11 @@
                         const startLabel = document.createElement('div');
                         startLabel.className = 'timeline-date-label';
                         startLabel.textContent = date.start + ' d.C';
-                        startLabel.style.left = `${startPercent}%`;
-                        startLabel.style.transform = `translate(-50%, -30px)`; // Fixed translateY
-                        timeline.appendChild(startLabel);
+                        overlay.appendChild(startLabel); // Append label to overlay, not timeline!
+                        startLabel.style.left = `0%`;
+                        startLabel.style.transform = `translateX(0%) translateY(-30px)`;
 
 
-                        // Linha e rótulo para o ano de fim
                         const endLine = document.createElement('div');
                         endLine.className = 'timeline-dashed-line';
                         endLine.style.left = `${endPercent}%`;
@@ -813,11 +814,13 @@
                         const endLabel = document.createElement('div');
                         endLabel.className = 'timeline-date-label';
                         endLabel.textContent = date.end + ' d.C';
-                        endLabel.style.left = `${endPercent}%`;
-                        endLabel.style.transform = `translate(-50%, -30px)`; // Fixed translateY
-                        timeline.appendChild(endLabel);
+                        overlay.appendChild(endLabel); // Append label to overlay, not timeline!
+                        endLabel.style.left = `100%`;
+                        endLabel.style.transform = `translateX(-100%) translateY(-30px)`;
+
+
                     } else {
-                        console.warn("Invalid percentage values calculated for date:", date); // Warn about percentage NaN
+                        console.warn("Invalid percentage values calculated for date:", date);
                     }
                 });
             } else {
@@ -827,13 +830,16 @@
         }
 
         function createSelectedCard(item, searchIndex) {
+            console.log("createSelectedCard CALLED for item:", item); // DEBUG - function call
+            console.log("itemEvents Map:", itemEvents); // DEBUG - itemEvents map content
             const dates = itemEvents.get(item.id);
-            console.log("Dates for item:", item, dates); // Debug: Check dates here
+            console.log("Dates retrieved from itemEvents for item.id", item.id, ":", dates); // DEBUG - dates retrieval
+
             const dateRange = getDateRange(dates);
             let startYear = null;
             let endYear = null;
 
-            if (dates && dates.length > 0) { // Check if dates is valid before accessing length
+            if (dates && dates.length > 0) {
                 startYear = parseInt(dates[0].date.split('-').pop());
                 endYear = dates.length > 1 ?
                     (dates[dates.length - 1].date.split('-').pop() === 'Presente' ?
@@ -841,7 +847,7 @@
                         parseInt(dates[dates.length - 1].date.split('-').pop())) :
                     startYear;
             } else {
-                console.warn("No dates found for item:", item); // Debug: No dates found
+                console.warn("No dates found for item:", item);
             }
 
 
@@ -875,7 +881,6 @@
         }
         window.removeCard = removeCard;
 
-        // Load data when page loads
         await loadData();
     </script>
 </body>
