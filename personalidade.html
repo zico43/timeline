@@ -415,6 +415,60 @@
                         'Sem eventos';
 
                     const content = `
+                        <style>
+                            .timeline-section {
+                                width: 100%;
+                                padding: 40px 20px;
+                                margin-top: 30px;
+                                background-color: #f8f8f8;
+                                border-radius: 12px;
+                            }
+                            .timeline-container {
+                                position: relative;
+                                width: 100%;
+                                height: 4px;
+                                background-color: #ddd;
+                                margin: 40px 0;
+                            }
+                            .timeline-line {
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                height: 100%;
+                                background-color: #333;
+                                width: 100%;
+                            }
+                            .timeline-year {
+                                position: absolute;
+                                top: -30px;
+                                transform: translateX(-50%);
+                                font-size: 16px;
+                                font-weight: 500;
+                                color: #333;
+                            }
+                            .timeline-year.start {
+                                left: 0;
+                            }
+                            .timeline-year.end {
+                                right: 0;
+                                transform: translateX(50%);
+                            }
+                            .timeline-dot {
+                                position: absolute;
+                                top: 50%;
+                                transform: translate(-50%, -50%);
+                                width: 12px;
+                                height: 12px;
+                                background-color: #333;
+                                border-radius: 50%;
+                            }
+                            .timeline-dot.start {
+                                left: 0;
+                            }
+                            .timeline-dot.end {
+                                right: 0;
+                            }
+                        </style>
                         <div class="personalidade-container">
                             <div class="personalidade-info">
                                 <img src="${personalidade.imageUrl || ''}" alt="${personalidade.name || 'Personalidade'}" class="personalidade-image">
@@ -428,7 +482,10 @@
                                             <div id="oficio-autocomplete-list" class="autocomplete-list"></div>
                                         </div>
                                     </div>
-                                    <a href="#" class="contemporaneos-button">Contemporâneos</a>
+                                    <div class="button-group" style="display: flex; gap: 10px;">
+                                        <a href="#" class="contemporaneos-button">Contemporâneos</a>
+                                        <a href="#" class="contemporaneos-button">Timeline</a>
+                                    </div>
                                     <div class="contemporaneos-list" id="contemporaneosList"></div>
                                 </div>
                             </div>
@@ -439,6 +496,16 @@
                                         <div class="evento-name">${evento.name}</div>
                                     </div>
                                 `).join('')}
+                            </div>
+                        </div>
+                        <div class="timeline-section">
+                            <h2 style="margin-bottom: 20px;">Linha do Tempo</h2>
+                            <div class="timeline-container">
+                                <div class="timeline-line"></div>
+                                <div class="timeline-dot start"></div>
+                                <div class="timeline-dot end"></div>
+                                <div class="timeline-year start">${birthEvent ? birthEvent.date.split('-').pop() : 'N/A'}</div>
+                                <div class="timeline-year end">${deathEvent ? deathEvent.date.split('-').pop() : 'Presente'}</div>
                             </div>
                         </div>
                     `;
@@ -456,27 +523,28 @@
                         const searchText = this.value.toLowerCase();
                         oficioAutocompleteList.innerHTML = '';
 
-                        if (searchText.length > 0) {
-                            const matchingOficios = Object.entries(todosOficios)
-                                .filter(([id, nome]) => nome.toLowerCase().includes(searchText))
-                                .slice(0, 10); // Limit to 10 results
+                        // Show results even when input is empty to display recent items
+                        const matchingOficios = Object.entries(todosOficios)
+                            .filter(([id, nome]) => nome.toLowerCase().includes(searchText))
+                            .slice(0, 10); // Limit to 10 results
 
-                            if (matchingOficios.length > 0) {
-                                oficioAutocompleteList.style.display = 'block';
-                                matchingOficios.forEach(([id, nome]) => {
-                                    const div = document.createElement('div');
-                                    div.className = 'autocomplete-item';
-                                    div.textContent = nome;
-                                    div.addEventListener('click', function() {
-                                        oficioAutocompleteInput.value = nome;
-                                        oficioAutocompleteInput.dataset.selectedId = id;
-                                        oficioAutocompleteList.style.display = 'none';
-                                        // Trigger contemporaries update
-                                        document.querySelector('.contemporaneos-button').click();
-                                    });
-                                    oficioAutocompleteList.appendChild(div);
+                        if (matchingOficios.length > 0) {
+                            oficioAutocompleteList.style.display = 'block';
+                            matchingOficios.forEach(([id, nome]) => {
+                                const div = document.createElement('div');
+                                div.className = 'autocomplete-item';
+                                div.textContent = nome;
+                                div.addEventListener('click', function() {
+                                    oficioAutocompleteInput.value = nome;
+                                    oficioAutocompleteInput.dataset.selectedId = id;
+                                    oficioAutocompleteList.style.display = 'none';
+                                    // Trigger contemporaries update
+                                    document.querySelector('.contemporaneos-button').click();
                                 });
-                            }
+                                oficioAutocompleteList.appendChild(div);
+                            });
+                        } else {
+                            oficioAutocompleteList.style.display = 'none';
                         }
                     });
 
