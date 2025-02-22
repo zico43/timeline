@@ -172,8 +172,8 @@
         }
         .selected-item-card {
             margin-top: 15px;
-            padding: 12px; /* Reduzi o padding vertical para 12px e horizontal mantive igual */
-            background: white;
+            padding: 12px;
+            background: rgba(239, 154, 154, 0.1); /* Default color (first card) */
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.06);
             width: 100%;
@@ -181,11 +181,17 @@
             transition: all 0.3s ease;
             position: relative;
             border: 1px solid rgba(0,0,0,0.08);
-            display: flex; /* Adicionado para layout flexível */
-            flex-direction: column; /* Alinha os itens verticalmente */
-            align-items: center; /* Centraliza horizontalmente o conteúdo do card */
-            margin-bottom: 0px; /* Garante que não há margem inferior extra */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 0px;
         }
+
+        /* Add specific background colors for each search container's selected card */
+        #selectedCard1 .selected-item-card { background: rgba(239, 154, 154, 0.1); } /* Red */
+        #selectedCard2 .selected-item-card { background: rgba(129, 199, 132, 0.1); } /* Green */
+        #selectedCard3 .selected-item-card { background: rgba(100, 181, 246, 0.1); } /* Blue */
+        #selectedCard4 .selected-item-card { background: rgba(186, 104, 200, 0.1); } /* Purple */
         .selected-item-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0,0,0,0.12);
