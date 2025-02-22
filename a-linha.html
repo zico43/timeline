@@ -211,6 +211,73 @@
         }
 
 
+        /* Timeline styles */
+        .timeline-container {
+            position: fixed;
+            bottom: 40px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 900;
+        }
+
+        .timeline {
+            position: relative;
+            width: 80%;
+            height: 4px;
+            background-color: #e0e0e0;
+            border-radius: 2px;
+        }
+
+        .timeline::before,
+        .timeline::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            background-color: #e0e0e0;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+
+        .timeline::before {
+            left: -6px;
+        }
+
+        .timeline::after {
+            right: -6px;
+        }
+
+        .timeline-arrow {
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 16px solid #e0e0e0;
+            transform: translateY(-50%);
+        }
+
+        .timeline-date {
+            position: absolute;
+            top: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .timeline-start-date {
+            left: -30px;
+        }
+
+        .timeline-end-date {
+            right: -30px;
+        }
     </style>
 </head>
 <body>
@@ -263,6 +330,13 @@
                 <!-- Este container geral não é mais usado para exibição -->
             </div>
         </main>
+        <div class="timeline-container">
+            <div class="timeline">
+                <div class="timeline-arrow"></div>
+                <div class="timeline-date timeline-start-date">1850</div>
+                <div class="timeline-date timeline-end-date">2040</div>
+            </div>
+        </div>
     </div>
 
     <script type="module">
