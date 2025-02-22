@@ -227,25 +227,45 @@
         .timeline {
             position: relative;
             width: 80%;
-            height: 4px;
+            height: 60px;
             background-color: #e0e0e0;
-            border-radius: 2px;
+            border-radius: 8px;
             overflow: visible;
         }
 
         .timeline-overlay {
             position: absolute;
-            height: 100%;
-            top: 0;
-            border-radius: 2px;
-            opacity: 0.7;
+            height: 12px;
+            border-radius: 4px;
+            opacity: 0.9;
             transition: all 0.3s ease;
+            left: 0;
+            right: 0;
         }
 
-        .timeline-overlay-1 { background-color: #4299e1; }
-        .timeline-overlay-2 { background-color: #48bb78; }
-        .timeline-overlay-3 { background-color: #ed8936; }
-        .timeline-overlay-4 { background-color: #9f7aea; }
+        .timeline-overlay::before,
+        .timeline-overlay::after {
+            content: attr(data-year);
+            position: absolute;
+            top: -25px;
+            font-size: 12px;
+            color: #666;
+            transform: translateX(-50%);
+        }
+
+        .timeline-overlay::before {
+            left: 0;
+        }
+
+        .timeline-overlay::after {
+            right: 0;
+            transform: translateX(50%);
+        }
+
+        .timeline-overlay-1 { background-color: #4299e1; top: 3px; }
+        .timeline-overlay-2 { background-color: #48bb78; top: 18px; }
+        .timeline-overlay-3 { background-color: #ed8936; top: 33px; }
+        .timeline-overlay-4 { background-color: #9f7aea; top: 48px; }
 
         .timeline::before,
         .timeline::after {
@@ -283,7 +303,7 @@
 
         .timeline-date {
             position: absolute;
-            top: 15px;
+            bottom: -30px;
             font-size: 14px;
             color: #666;
             transition: all 0.3s ease;
@@ -291,10 +311,60 @@
 
         .timeline-start-date {
             left: -30px;
+            bottom: -30px;
         }
 
         .timeline-end-date {
             right: -30px;
+            bottom: -30px;
+        }
+
+        .timeline-overlay {
+            position: absolute;
+            height: 12px;
+            border-radius: 4px;
+            opacity: 0.9;
+            transition: all 0.3s ease;
+            left: 0;
+            right: 0;
+        }
+
+        .timeline-overlay::before,
+        .timeline-overlay::after {
+            content: attr(data-year);
+            position: absolute;
+            top: -25px;
+            font-size: 12px;
+            color: #666;
+            transform: translateX(-50%);
+        }
+
+        .timeline-overlay::before {
+            left: 0;
+        }
+
+        .timeline-overlay::after {
+            right: 0;
+            transform: translateX(50%);
+        }
+
+        .timeline-overlay::after {
+            content: attr(data-year);
+            position: absolute;
+            bottom: -30px;
+            font-size: 14px;
+            color: #666;
+            transform: translateX(-50%);
+        }
+
+        .timeline-overlay::before {
+            content: attr(data-end-year);
+            position: absolute;
+            bottom: -30px;
+            right: 0;
+            font-size: 14px;
+            color: #666;
+            transform: translateX(50%);
         }
     </style>
 </head>
