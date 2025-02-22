@@ -609,7 +609,7 @@
                             if (event && event.itemId) {
                                 // Defensive initialization of itemEvents entry if it doesn't exist
                                 if (!itemEvents.has(event.itemId)) {
-                                    itemEvents.set(itemEvents.itemId, []);
+                                    itemEvents.set(event.itemId, []);
                                 }
                                 itemEvents.get(event.itemId).push({
                                     date: event.date,
@@ -642,7 +642,7 @@
 
             if (birthEvent) {
                 birthYear = birthEvent.date.split('-').pop();
-                deathYear = deathEvent ? deathEvent.date.split('-').pop() : new Date().getFullYear().toString(); // Get current year dynamically!
+                deathYear = deathEvent ? deathEvent.date.split('-').pop() : 'Presente';
                 console.log("getDateRange - Personality - birthYear:", birthYear, "deathYear:", deathYear); // DEBUG - personality dates
                 return `(${birthYear} - ${deathYear})`;
             } else {
