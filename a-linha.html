@@ -749,66 +749,76 @@
                     const dates = selectedCard.dataset.dates.split(',');
                     const startYear = parseInt(dates[0]);
                     const endYear = dates[1] === 'Presente' ? new Date().getFullYear() : parseInt(dates[1]);
-                    selectedDates.push({ start: startYear, end: endYear, index: i });
+                     if (!isNaN(startYear) && !isNaN(endYear)) { // *** ADDED DATE VALIDATION ***
+                        selectedDates.push({ start: startYear, end: endYear, index: i });
+                    } else {
+                        console.warn("Invalid dates found in card data:", selectedCard.dataset.dates); // Warn about invalid dates
+                    }
                 }
             }
 
-            console.log('selectedDates Array:', selectedDates); // *** ADDED DEBUG LOG ***
+            console.log('selectedDates Array at start of updateTimeline:', selectedDates); // *** DEBUG LOG: Log selectedDates at function start ***
 
             if (selectedDates.length > 0) {
                 const minYear = Math.min(...selectedDates.map(d => d.start));
                 const maxYear = Math.max(...selectedDates.map(d => d.end));
 
+                console.log('Calculated minYear:', minYear, 'maxYear:', maxYear); // *** DEBUG LOG: Log minYear and maxYear ***
+
                 startDateEl.textContent = minYear;
                 endDateEl.textContent = maxYear;
 
                 selectedDates.forEach(date => {
-                    console.log('Processing Date:', date); // *** ADDED DEBUG LOG ***
+                    console.log('Processing Date:', date, 'minYear:', minYear, 'maxYear:', maxYear); // *** DEBUG LOG: Log date and timeline range ***
                     const overlay = document.createElement('div');
                     overlay.className = `timeline-overlay timeline-overlay-${date.index}`;
                     const startPercent = ((date.start - minYear) / (maxYear - minYear)) * 100;
                     const endPercent = ((date.end - minYear) / (maxYear - minYear)) * 100;
-                    console.log('Start Percent:', startPercent, 'End Percent:', endPercent);
-                    overlay.style.left = `${startPercent}%`;
 
-                    let calculatedWidth = endPercent - startPercent;
-                    // Ensure a minimum width for the overlay, even if dates are the same
-                    const minLineWidth = 1; // Adjust this value as needed (in percentage)
-                    if (calculatedWidth < minLineWidth) {
-                        calculatedWidth = minLineWidth;
+                    if (!isNaN(startPercent) && !isNaN(endPercent)) { // *** ADDED PERCENTAGE VALIDATION ***
+                        console.log('Start Percent:', startPercent, 'End Percent:', endPercent);
+                        overlay.style.left = `${startPercent}%`;
+
+                        let calculatedWidth = endPercent - startPercent;
+                        // Ensure a minimum width for the overlay, even if dates are the same
+                        const minLineWidth = 1; // Adjust this value as needed (in percentage)
+                        if (calculatedWidth < minLineWidth) {
+                            calculatedWidth = minLineWidth;
+                        }
+                        overlay.style.width = `${calculatedWidth}%`;
+
+                        console.log('Overlay Element:', overlay);
+                        timeline.appendChild(overlay);
+
+                        // Linha e rótulo para o ano de início
+                        const startLine = document.createElement('div');
+                        startLine.className = 'timeline-dashed-line';
+                        startLine.style.left = `${startPercent}%`;
+                        timeline.appendChild(startLine);
+
+                        const startLabel = document.createElement('div');
+                        startLabel.className = 'timeline-date-label';
+                        startLabel.textContent = date.start + ' d.C';
+                        startLabel.style.left = `${startPercent}%`;
+                        startLabel.style.transform = `translate(-50%, -30px)`; // Fixed translateY
+                        timeline.appendChild(startLabel);
+
+
+                        // Linha e rótulo para o ano de fim
+                        const endLine = document.createElement('div');
+                        endLine.className = 'timeline-dashed-line';
+                        endLine.style.left = `${endPercent}%`;
+                        timeline.appendChild(endLine);
+
+                        const endLabel = document.createElement('div');
+                        endLabel.className = 'timeline-date-label';
+                        endLabel.textContent = date.end + ' d.C';
+                        endLabel.style.left = `${endPercent}%`;
+                        endLabel.style.transform = `translate(-50%, -30px)`; // Fixed translateY
+                        timeline.appendChild(endLabel);
+                    } else {
+                        console.warn("Invalid percentage values calculated for date:", date); // Warn about percentage NaN
                     }
-                    overlay.style.width = `${calculatedWidth}%`;
-
-
-                    console.log('Overlay Element:', overlay);
-                    timeline.appendChild(overlay);
-
-                    // Linha e rótulo para o ano de início
-                    const startLine = document.createElement('div');
-                    startLine.className = 'timeline-dashed-line';
-                    startLine.style.left = `${startPercent}%`;
-                    timeline.appendChild(startLine);
-
-                    const startLabel = document.createElement('div');
-                    startLabel.className = 'timeline-date-label';
-                    startLabel.textContent = date.start + ' d.C';
-                    startLabel.style.left = `${startPercent}%`;
-                    startLabel.style.transform = `translate(-50%, -30px)`; // Fixed translateY
-                    timeline.appendChild(startLabel);
-
-
-                    // Linha e rótulo para o ano de fim
-                    const endLine = document.createElement('div');
-                    endLine.className = 'timeline-dashed-line';
-                    endLine.style.left = `${endPercent}%`;
-                    timeline.appendChild(endLine);
-
-                    const endLabel = document.createElement('div');
-                    endLabel.className = 'timeline-date-label';
-                    endLabel.textContent = date.end + ' d.C';
-                    endLabel.style.left = `${endPercent}%`;
-                    endLabel.style.transform = `translate(-50%, -30px)`; // Fixed translateY
-                    timeline.appendChild(endLabel);
                 });
             } else {
                 startDateEl.textContent = '1850';
