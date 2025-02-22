@@ -429,14 +429,15 @@
                                 height: 4px;
                                 background-color: #ddd;
                                 margin: 40px 0;
+                                padding: 0 20px;
                             }
                             .timeline-line {
                                 position: absolute;
                                 top: 0;
-                                left: 0;
+                                left: 20px;
+                                right: 20px;
                                 height: 100%;
                                 background-color: #333;
-                                width: 100%;
                             }
                             .timeline-year {
                                 position: absolute;
@@ -447,10 +448,10 @@
                                 color: #333;
                             }
                             .timeline-year.start {
-                                left: 0;
+                                left: 20px;
                             }
                             .timeline-year.end {
-                                right: 0;
+                                right: 20px;
                                 transform: translateX(50%);
                             }
                             .timeline-dot {
@@ -461,12 +462,42 @@
                                 height: 12px;
                                 background-color: #333;
                                 border-radius: 50%;
+                                cursor: pointer;
                             }
                             .timeline-dot.start {
-                                left: 0;
+                                left: 20px;
                             }
                             .timeline-dot.end {
-                                right: 0;
+                                right: 20px;
+                            }
+                            .timeline-event {
+                                position: absolute;
+                                top: 50%;
+                                transform: translate(-50%, -50%);
+                                width: 10px;
+                                height: 10px;
+                                background-color: #666;
+                                border-radius: 50%;
+                                cursor: pointer;
+                            }
+                            .timeline-event-label {
+                                position: absolute;
+                                top: 20px;
+                                transform: translateX(-50%);
+                                font-size: 14px;
+                                color: #666;
+                                text-align: center;
+                                max-width: 120px;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                            }
+                            .timeline-event:hover {
+                                background-color: #333;
+                            }
+                            .timeline-event:hover + .timeline-event-label {
+                                color: #333;
+                                font-weight: 500;
                             }
                         </style>
                         <div class="personalidade-container">
@@ -506,6 +537,21 @@
                                 <div class="timeline-dot end"></div>
                                 <div class="timeline-year start">${birthEvent ? birthEvent.date.split('-').pop() : 'N/A'}</div>
                                 <div class="timeline-year end">${deathEvent ? deathEvent.date.split('-').pop() : 'Presente'}</div>
+                                ${eventosArray.map(evento => {
+                                    const eventDate = new Date(evento.date);
+                                    const birthDate = birthEvent ? new Date(birthEvent.date) : null;
+                                    const deathDate = deathEvent ? new Date(deathEvent.date) : new Date();
+                                    
+                                    if (birthDate && eventDate && deathDate) {
+                                        const timeRange = deathDate.getTime() - birthDate.getTime();
+                                        const eventPosition = ((eventDate.getTime() - birthDate.getTime()) / timeRange) * 100;
+                                        return `
+                                            <div class="timeline-event" style="left: ${20 + (eventPosition * 0.6)}%"></div>
+                                            <div class="timeline-event-label" style="left: ${20 + (eventPosition * 0.6)}%">${evento.name}</div>
+                                        `;
+                                    }
+                                    return '';
+                                }).join('')}
                             </div>
                         </div>
                     `;
