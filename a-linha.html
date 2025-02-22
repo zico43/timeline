@@ -230,7 +230,22 @@
             height: 4px;
             background-color: #e0e0e0;
             border-radius: 2px;
+            overflow: visible;
         }
+
+        .timeline-overlay {
+            position: absolute;
+            height: 100%;
+            top: 0;
+            border-radius: 2px;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-overlay-1 { background-color: #4299e1; }
+        .timeline-overlay-2 { background-color: #48bb78; }
+        .timeline-overlay-3 { background-color: #ed8936; }
+        .timeline-overlay-4 { background-color: #9f7aea; }
 
         .timeline::before,
         .timeline::after {
@@ -242,6 +257,7 @@
             background-color: #e0e0e0;
             border-radius: 50%;
             transform: translateY(-50%);
+            z-index: 1;
         }
 
         .timeline::before {
@@ -262,6 +278,7 @@
             border-bottom: 8px solid transparent;
             border-left: 16px solid #e0e0e0;
             transform: translateY(-50%);
+            z-index: 1;
         }
 
         .timeline-date {
@@ -269,6 +286,7 @@
             top: 15px;
             font-size: 14px;
             color: #666;
+            transition: all 0.3s ease;
         }
 
         .timeline-start-date {
@@ -487,71 +505,14 @@
                         div.appendChild(info);
 
                         div.addEventListener('click', () => {
-                            const searchContainer = searchInput.closest('.search-container'); // Get the parent search container
-                            const selectedCardContainer = searchContainer.querySelector('.selected-card-for-search'); // Find the card container within it
-                            selectedCardContainer.innerHTML = ''; // Clear any existing card
-
-                            // Create new card
-                            const card = document.createElement('div');
-                            card.className = 'selected-item-card';
-
-                            // *** NEW: Create close button ***
-                            const closeButton = document.createElement('button');
-                            closeButton.className = 'card-close-button'; // Add a class for styling
-                            closeButton.innerHTML = '×'; // "x" character
-                            closeButton.addEventListener('click', (e) => {
-                                e.stopPropagation(); // Prevent event bubbling
-                                card.remove(); // Remove the card from the DOM
-                            });
-                            card.appendChild(closeButton); // Add close button to the card
-                            // *** END NEW: Create close button ***
-
-                            // Add image container
-                            const imageContainer = document.createElement('div');
-                            imageContainer.className = 'card-image-container';
-                            const image = document.createElement('img');
-                            image.src = item.imageUrl || 'https://via.placeholder.com/300x200';
-                            image.alt = item.name;
-                            image.className = 'card-image';
-                            imageContainer.appendChild(image);
-                            card.appendChild(imageContainer);
-
-                            const cardHeader = document.createElement('div');
-                            cardHeader.className = 'card-header';
-
-                            const cardTitle = document.createElement('div');
-                            cardTitle.className = 'card-title';
-                            cardTitle.textContent = item.name;
-
-                            const cardType = document.createElement('div');
-                            cardType.className = 'card-type';
-                            cardType.textContent = item.type === 'personalidade' ? 'Personalidade' : 'Acontecimento';
-
-                            cardHeader.appendChild(cardTitle);
-                            cardHeader.appendChild(cardType);
-
-                            const dates = itemEvents.get(item.id);
-                            if (dates) {
-                                const cardDates = document.createElement('div');
-                                cardDates.className = 'card-dates';
-                                cardDates.textContent = getDateRange(dates);
-                                card.appendChild(cardDates);
-                            }
-
-                            if (item.description) {
-                                const cardDescription = document.createElement('div');
-                                cardDescription.className = 'card-description';
-                                cardDescription.textContent = item.description;
-                                card.appendChild(cardDescription);
-                            }
-
-                            card.insertBefore(cardHeader, card.firstChild);
-                            selectedCardContainer.appendChild(card); // Append to the specific container
-
-                            // Hide search results
-                            searchResults[index].style.display = 'none';
-                            searchInput.value = '';
-                        });
+                    const itemName = div.querySelector('.result-name').textContent.split('(')[0].trim();
+                    const selectedItem = allItems.find(item => item.name === itemName);
+                    if (selectedItem) {
+                        createSelectedCard(selectedItem, index + 1);
+                        searchInput.value = '';
+                        searchResults[index].style.display = 'none';
+                    }
+                });
 
                         searchResults[index].appendChild(div);
                     });
@@ -569,6 +530,96 @@
                 }
             });
         });
+
+        function updateTimeline() {
+            const timeline = document.querySelector('.timeline');
+            const startDateEl = document.querySelector('.timeline-start-date');
+            const endDateEl = document.querySelector('.timeline-end-date');
+
+            // Remove existing overlays
+            timeline.querySelectorAll('.timeline-overlay').forEach(overlay => overlay.remove());
+
+            let selectedDates = [];
+
+            // Collect dates from all selected cards
+            for (let i = 1; i <= 4; i++) {
+                const selectedCard = document.getElementById(`selectedCard${i}`).querySelector('.selected-item-card');
+                if (selectedCard) {
+                    const dates = selectedCard.dataset.dates.split(',');
+                    const startYear = parseInt(dates[0]);
+                    const endYear = dates[1] === 'Presente' ? new Date().getFullYear() : parseInt(dates[1]);
+                    selectedDates.push({ start: startYear, end: endYear, index: i });
+                }
+            }
+
+            if (selectedDates.length > 0) {
+                // Find global min and max years
+                const minYear = Math.min(...selectedDates.map(d => d.start));
+                const maxYear = Math.max(...selectedDates.map(d => d.end));
+
+                // Update timeline dates
+                startDateEl.textContent = minYear;
+                endDateEl.textContent = maxYear;
+
+                // Create overlays for each selected date range
+                selectedDates.forEach(date => {
+                    const overlay = document.createElement('div');
+                    overlay.className = `timeline-overlay timeline-overlay-${date.index}`;
+
+                    // Calculate position and width as percentages
+                    const startPercent = ((date.start - minYear) / (maxYear - minYear)) * 100;
+                    const endPercent = ((date.end - minYear) / (maxYear - minYear)) * 100;
+                    
+                    overlay.style.left = `${startPercent}%`;
+                    overlay.style.width = `${endPercent - startPercent}%`;
+                    
+                    timeline.appendChild(overlay);
+                });
+            } else {
+                // Reset to default range if no items selected
+                startDateEl.textContent = '1850';
+                endDateEl.textContent = '2040';
+            }
+        }
+
+        function createSelectedCard(item, searchIndex) {
+            const dates = itemEvents.get(item.id);
+            const dateRange = getDateRange(dates);
+            const startYear = dates.length > 0 ? parseInt(dates[0].date.split('-').pop()) : null;
+            const endYear = dates.length > 1 ? 
+                (dates[dates.length - 1].date.split('-').pop() === 'Presente' ? 
+                    new Date().getFullYear() : 
+                    parseInt(dates[dates.length - 1].date.split('-').pop())) : 
+                startYear;
+
+            const card = document.createElement('div');
+            card.className = 'selected-item-card';
+            card.dataset.dates = `${startYear},${endYear}`;
+
+            card.innerHTML = `
+                <button class="card-close-button" onclick="removeCard(${searchIndex})">×</button>
+                <div class="card-image-container">
+                    <img src="${item.imageUrl || 'placeholder.jpg'}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="card-header">
+                    <h3>${item.name}</h3>
+                </div>
+                <div class="card-dates">${dateRange}</div>
+                <div class="card-description">${item.description || ''}</div>
+            `;
+
+            const selectedCardContainer = document.getElementById(`selectedCard${searchIndex}`);
+            selectedCardContainer.innerHTML = '';
+            selectedCardContainer.appendChild(card);
+
+            updateTimeline();
+        }
+
+        function removeCard(searchIndex) {
+            const selectedCardContainer = document.getElementById(`selectedCard${searchIndex}`);
+            selectedCardContainer.innerHTML = '';
+            updateTimeline();
+        }
 
         // Load data when page loads
         await loadData();
