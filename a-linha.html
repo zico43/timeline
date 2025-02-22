@@ -17,6 +17,24 @@
             margin: 30px auto 0;
             gap: 50px;
         }
+        @media screen and (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                gap: 20px;
+                margin: 15px auto 0;
+                padding: 15px;
+            }
+            .search-container {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            .selected-item-card {
+                margin: 10px 0;
+            }
+            .timeline {
+                margin-top: 30px;
+            }
+        }
         .search-container {
             position: relative;
             width: calc(20% - 8px);
@@ -215,13 +233,39 @@
         .timeline-container {
             position: fixed;
             bottom: 40px;
-            left: 0;
+            left: 200px;
             right: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
             z-index: 900;
+        }
+
+        @media screen and (max-width: 768px) {
+            .timeline-container {
+                bottom: 20px;
+                padding: 10px;
+            }
+            .timeline {
+                width: 95%;
+                height: 50px;
+            }
+            .timeline-date {
+                font-size: 12px;
+            }
+            .search-results {
+                max-height: 300px;
+            }
+            .search-result-item {
+                padding: 8px 10px;
+            }
+            .result-name {
+                font-size: 1em;
+            }
+            .result-date {
+                font-size: 0.8em;
+            }
         }
 
         .timeline {
@@ -245,27 +289,28 @@
 
         .timeline-overlay::before,
         .timeline-overlay::after {
-            content: attr(data-year);
+            content: attr(data-start-year);
             position: absolute;
-            top: -25px;
+            bottom: -30px;
             font-size: 12px;
             color: #666;
-            transform: translateX(-50%);
         }
 
         .timeline-overlay::before {
             left: 0;
+            transform: translateX(-50%);
         }
 
         .timeline-overlay::after {
+            content: attr(data-end-year);
             right: 0;
             transform: translateX(50%);
         }
 
-        .timeline-overlay-1 { background-color: #4299e1; top: 3px; }
-        .timeline-overlay-2 { background-color: #48bb78; top: 18px; }
-        .timeline-overlay-3 { background-color: #ed8936; top: 33px; }
-        .timeline-overlay-4 { background-color: #9f7aea; top: 48px; }
+        .timeline-overlay-1 { background-color: #ef9a9a; top: 3px; }
+        .timeline-overlay-2 { background-color: #81c784; top: 18px; }
+        .timeline-overlay-3 { background-color: #64b5f6; top: 33px; }
+        .timeline-overlay-4 { background-color: #ba68c8; top: 48px; }
 
         .timeline::before,
         .timeline::after {
