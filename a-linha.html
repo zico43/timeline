@@ -533,7 +533,7 @@
         import { getDatabase, ref, get, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            apiKey: "YOUR_API_KEY", // Replace with your actual API key
             authDomain: "cronologias-ce797.firebaseapp.com",
             databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
             projectId: "cronologias-ce797",
@@ -556,11 +556,22 @@
                 const personalidadesSnapshot = await get(personalidadesRef);
                 if (personalidadesSnapshot.exists()) {
                     personalidadesSnapshot.forEach((childSnapshot) => {
-                        allItems.push({
-                            id: childSnapshot.key,
-                            type: 'personalidade',
-                            ...childSnapshot.val()
-                        });
+                        if (childSnapshot) { // *** ADDED CHECK: Check if childSnapshot exists
+                            const itemVal = childSnapshot.val();
+                            console.log("Personalidade Child Snapshot:", childSnapshot);
+                            console.log("Personalidade Child Val:", itemVal);
+                            if (itemVal) {
+                                allItems.push({
+                                    id: childSnapshot.key,
+                                    type: 'personalidade',
+                                    ...itemVal
+                                });
+                            } else {
+                                console.warn("Personalidade data is null or undefined for key:", childSnapshot.key);
+                            }
+                        } else {
+                            console.warn("Child snapshot is unexpectedly null or undefined in personalidades loop."); // Added warning
+                        }
                     });
                 }
 
@@ -569,11 +580,22 @@
                 const acontecimentosSnapshot = await get(acontecimentosRef);
                 if (acontecimentosSnapshot.exists()) {
                     acontecimentosSnapshot.forEach((childSnapshot) => {
-                        allItems.push({
-                            id: childSnapshot.key,
-                            type: 'acontecimento',
-                            ...childSnapshot.val()
-                        });
+                         if (childSnapshot) { // *** ADDED CHECK: Check if childSnapshot exists
+                            const itemVal = childSnapshot.val();
+                            console.log("Acontecimento Child Snapshot:", childSnapshot);
+                            console.log("Acontecimento Child Val:", itemVal);
+                            if (itemVal) {
+                                allItems.push({
+                                    id: childSnapshot.key,
+                                    type: 'acontecimento',
+                                    ...itemVal
+                                });
+                            } else {
+                                console.warn("Acontecimento data is null or undefined for key:", childSnapshot.key);
+                            }
+                        } else {
+                            console.warn("Child snapshot is unexpectedly null or undefined in acontecimentos loop."); // Added warning
+                        }
                     });
                 }
 
@@ -582,15 +604,22 @@
                 const eventosSnapshot = await get(eventosRef);
                 if (eventosSnapshot.exists()) {
                     eventosSnapshot.forEach((childSnapshot) => {
-                        const event = childSnapshot.val();
-                        if (event.itemId) {
-                            if (!itemEvents.has(event.itemId)) {
-                                itemEvents.set(event.itemId, []);
+                         if (childSnapshot) { // *** ADDED CHECK: Check if childSnapshot exists
+                            const event = childSnapshot.val();
+                            if (event && event.itemId) {
+                                // Defensive initialization of itemEvents entry if it doesn't exist
+                                if (!itemEvents.has(event.itemId)) {
+                                    itemEvents.set(event.itemId, []);
+                                }
+                                itemEvents.get(event.itemId).push({
+                                    date: event.date,
+                                    name: event.name
+                                });
+                            } else {
+                                console.warn("Event data is missing itemId or is null/undefined:", event);
                             }
-                            itemEvents.get(event.itemId).push({
-                                date: event.date,
-                                name: event.name
-                            });
+                        } else {
+                            console.warn("Child snapshot is unexpectedly null or undefined in eventos loop."); // Added warning
                         }
                     });
                 }
@@ -598,6 +627,7 @@
                 console.error('Error loading data:', error);
             }
         }
+
 
         function getDateRange(dates) {
             if (!dates || dates.length === 0) return '';
@@ -708,11 +738,10 @@
             const endDateEl = document.querySelector('.timeline-end-date');
 
             timeline.querySelectorAll('.timeline-overlay').forEach(overlay => overlay.remove());
-            timeline.querySelectorAll('.timeline-dashed-line').forEach(line => line.remove());  // Remover linhas tracejadas
-            timeline.querySelectorAll('.timeline-date-label').forEach(label => label.remove()); // Remover rótulos
+            timeline.querySelectorAll('.timeline-dashed-line').forEach(line => line.remove());
+            timeline.querySelectorAll('.timeline-date-label').forEach(label => label.remove());
 
             let selectedDates = [];
-            let translateY = -30;
 
             for (let i = 1; i <= 4; i++) {
                 const selectedCard = document.getElementById(`selectedCard${i}`).querySelector('.selected-item-card');
@@ -724,6 +753,8 @@
                 }
             }
 
+            console.log('selectedDates Array:', selectedDates); // *** ADDED DEBUG LOG ***
+
             if (selectedDates.length > 0) {
                 const minYear = Math.min(...selectedDates.map(d => d.start));
                 const maxYear = Math.max(...selectedDates.map(d => d.end));
@@ -732,33 +763,37 @@
                 endDateEl.textContent = maxYear;
 
                 selectedDates.forEach(date => {
+                    console.log('Processing Date:', date); // *** ADDED DEBUG LOG ***
                     const overlay = document.createElement('div');
                     overlay.className = `timeline-overlay timeline-overlay-${date.index}`;
                     const startPercent = ((date.start - minYear) / (maxYear - minYear)) * 100;
                     const endPercent = ((date.end - minYear) / (maxYear - minYear)) * 100;
+                    console.log('Start Percent:', startPercent, 'End Percent:', endPercent);
                     overlay.style.left = `${startPercent}%`;
-                    overlay.style.width = `${endPercent - startPercent}%`;
+
+                    let calculatedWidth = endPercent - startPercent;
+                    // Ensure a minimum width for the overlay, even if dates are the same
+                    const minLineWidth = 1; // Adjust this value as needed (in percentage)
+                    if (calculatedWidth < minLineWidth) {
+                        calculatedWidth = minLineWidth;
+                    }
+                    overlay.style.width = `${calculatedWidth}%`;
+
+
+                    console.log('Overlay Element:', overlay);
                     timeline.appendChild(overlay);
 
                     // Linha e rótulo para o ano de início
                     const startLine = document.createElement('div');
                     startLine.className = 'timeline-dashed-line';
                     startLine.style.left = `${startPercent}%`;
-
                     timeline.appendChild(startLine);
-
 
                     const startLabel = document.createElement('div');
                     startLabel.className = 'timeline-date-label';
                     startLabel.textContent = date.start + ' d.C';
                     startLabel.style.left = `${startPercent}%`;
-                    startLabel.style.transform = `translate(-50%, ${translateY}px)`;
-                    if (translateY > -100){
-                         translateY -= 15;
-                    }
-                    else {
-                        translateY = -30;
-                    }
+                    startLabel.style.transform = `translate(-50%, -30px)`; // Fixed translateY
                     timeline.appendChild(startLabel);
 
 
@@ -766,20 +801,13 @@
                     const endLine = document.createElement('div');
                     endLine.className = 'timeline-dashed-line';
                     endLine.style.left = `${endPercent}%`;
-
                     timeline.appendChild(endLine);
 
                     const endLabel = document.createElement('div');
                     endLabel.className = 'timeline-date-label';
-                    endLabel.textContent = date.end+ ' d.C';
+                    endLabel.textContent = date.end + ' d.C';
                     endLabel.style.left = `${endPercent}%`;
-                    endLabel.style.transform = `translate(-50%, ${translateY}px)`;
-                    if (translateY > -100){
-                         translateY -= 15;
-                    }
-                    else {
-                        translateY = -30
-                    }
+                    endLabel.style.transform = `translate(-50%, -30px)`; // Fixed translateY
                     timeline.appendChild(endLabel);
                 });
             } else {
@@ -790,13 +818,22 @@
 
         function createSelectedCard(item, searchIndex) {
             const dates = itemEvents.get(item.id);
+            console.log("Dates for item:", item, dates); // Debug: Check dates here
             const dateRange = getDateRange(dates);
-            const startYear = dates.length > 0 ? parseInt(dates[0].date.split('-').pop()) : null;
-            const endYear = dates.length > 1 ?
-                (dates[dates.length - 1].date.split('-').pop() === 'Presente' ?
-                    new Date().getFullYear() :
-                    parseInt(dates[dates.length - 1].date.split('-').pop())) :
-                startYear;
+            let startYear = null;
+            let endYear = null;
+
+            if (dates && dates.length > 0) { // Check if dates is valid before accessing length
+                startYear = parseInt(dates[0].date.split('-').pop());
+                endYear = dates.length > 1 ?
+                    (dates[dates.length - 1].date.split('-').pop() === 'Presente' ?
+                        new Date().getFullYear() :
+                        parseInt(dates[dates.length - 1].date.split('-').pop())) :
+                    startYear;
+            } else {
+                console.warn("No dates found for item:", item); // Debug: No dates found
+            }
+
 
             const card = document.createElement('div');
             card.className = 'selected-item-card';
