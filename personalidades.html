@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalidades - CRONO LOGIAS</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .personalities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .personality-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .personality-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .personality-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .personality-info {
+            padding: 15px;
+            position: relative;
+        }
+
+        .personality-chip {
+            position: absolute;
+            top: -12px;
+            right: 15px;
+            background: #2196F3;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.8em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .personality-dates {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .personality-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .personality-description {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .personality-dates {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .filters {
+            padding: 20px;
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .search-input:focus {
+            border-color: #2196F3;
+            background: white;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: #9e9e9e;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .toggle-button {
+            padding: 12px 20px;
+            font-size: 1rem;
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #555;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .toggle-button:hover {
+            background: #f8f9fa;
+            border-color: #2196F3;
+            transform: translateY(-1px);
+        }
+
+        .toggle-button.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.2);
+        }
+
+        .date-filters {
+            display: none;
+            flex-wrap: wrap;
+            gap: 12px;
+            width: 100%;
+            padding: 10px 0;
+            justify-content: flex-start;
+            margin-top: 5px;
+        }
+
+        .date-filters.active {
+            display: flex;
+        }
+
+        .date-filter-btn {
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            color: #555;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin: 2px;
+        }
+
+        .date-filter-btn:hover {
+            background: #f8f9fa;
+            border-color: #2196F3;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .date-filter-btn.active {
+            background: #2196F3;
+            color: white;
+            border-color: #2196F3;
+            box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+        }
+
+        .filters:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            background-color: #f8f8f8;
+            margin: 0;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #2196F3;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-results {
+            display: none;
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .search-result-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background-color: #f0f7ff;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="index.html">CRONO LOGIAS</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="neste-dia.html" class="nav-item">NESTE DIA</a>
+                <a href="top-mundial.html" class="nav-item">TOP MUNDIAL</a>
+                <a href="por-tema.html" class="nav-item">POR TEMA</a>
+                <a href="por-ano.html" class="nav-item">POR ANO</a>
+                <a href="personalidades.html" class="nav-item">PERSONALIDADES</a>
+                <a href="a-linha.html" class="nav-item">A LINHA</a>
+                <a href="criar.html" class="nav-item">CRIAR</a>
+            </nav>
+        </div>
+        <main class="main-content">
+            <h1>Personalidades</h1>
+            <p>Conheça as figuras históricas que moldaram o mundo como o conhecemos hoje.</p>
+
+            <div class="filters">
+                <div class="search-filters">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Buscar personalidades...">
+                    </div>
+                    <div class="filter-buttons">
+                        <div class="search-container">
+                            <input type="text" id="oficioSearch" class="search-input" placeholder="Filtrar por ofício">
+                            <div id="oficioSearchResults" class="search-results"></div>
+                        </div>
+                        <button id="toggleDateFilters" class="toggle-button">Por períodos</button>
+                    </div>
+                </div>
+                <div id="dateFilters" class="date-filters"></div>
+            </div>
+
+            <div id="personalities-container" class="personalities-grid">
+                <div class="loading">Carregando personalidades...</div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebasestorage.app",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let allPersonalities = [];
+        let allOficios = [];
+
+        async function loadOficios() {
+            try {
+                const oficiosRef = ref(database, 'oficios');
+                const snapshot = await get(oficiosRef);
+
+                if (snapshot.exists()) {
+                    allOficios = Object.entries(snapshot.val()).map(([id, oficio]) => ({
+                        id,
+                        ...oficio
+                    }));
+                }
+            } catch (error) {
+                console.error('Error loading oficios:', error);
+            }
+        }
+
+        async function loadPersonalities() {
+            try {
+                const personalidadesRef = ref(database, 'personalidades');
+                const snapshot = await get(personalidadesRef);
+
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const eventosRef = ref(database, 'eventos');
+                    const eventosSnapshot = await get(eventosRef);
+                    const eventos = eventosSnapshot.exists() ? eventosSnapshot.val() : {};
+
+                    allPersonalities = await Promise.all(
+                        Object.entries(data)
+                            .map(async ([id, personality]) => {
+                                try {
+                                    const personEvents = Object.entries(eventos)
+                                        .filter(([_, evento]) => evento.itemId === id)
+                                        .map(([_, evento]) => evento);
+
+                                    const birthEvent = personEvents.find(e => e.name === 'Nascimento');
+                                    const deathEvent = personEvents.find(e => e.name === 'Falecimento');
+
+                                    let birthYear = null;
+                                    let deathYear = null;
+                                    let birthIsAC = false;
+                                    let deathIsAC = false;
+
+                                    console.log(`Processing personality ID: ${id}`);
+                                    console.log(`birthEvent.date before parsing: ${birthEvent ? birthEvent.date : 'No birth event'}`);
+                                    console.log(`deathEvent.date before parsing: ${deathEvent ? deathEvent.date : 'No death event'}`);
+
+                                    if (birthEvent && birthEvent.date) {
+                                        const dateParts = birthEvent.date.split('-');
+                                        let yearString = dateParts[dateParts.length - 1];
+                                        birthIsAC = birthEvent.date.includes('--');
+                                        if (birthIsAC) {
+                                            yearString = yearString.replace('--', '');
+                                        }
+                                        if (yearString) {
+                                            birthYear = parseInt(yearString, 10);
+                                        }
+                                        console.log(`Year string after substring and before parseInt (birth): ${yearString}`);
+                                    }
+
+                                    if (deathEvent && deathEvent.date) {
+                                        const dateParts = deathEvent.date.split('-');
+                                        let yearString = dateParts[dateParts.length - 1];
+                                        deathIsAC = deathEvent.date.includes('--');
+                                        if (deathIsAC) {
+                                            yearString = yearString.replace('--', '');
+                                        }
+                                        if (yearString) {
+                                            deathYear = parseInt(yearString, 10);
+                                        }
+                                        console.log(`Year string after substring and before parseInt (death): ${yearString}`);
+                                    }
+
+                                    console.log(`birthYear after parsing: ${birthYear}`);
+                                    console.log(`deathYear after parsing: ${deathYear}`);
+                                    console.log(`birthIsAC: ${birthIsAC}`);
+                                    console.log(`deathIsAC: ${deathIsAC}`);
+
+                                    let oficioName = 'Sem ofício';
+                                    if (personality.oficioId) {
+                                        const oficioRef = ref(database, `oficios/${personality.oficioId}`);
+                                        const oficioSnapshot = await get(oficioRef);
+                                        if (oficioSnapshot.exists()) {
+                                            oficioName = oficioSnapshot.val().nome;
+                                        }
+                                    }
+
+                                    return {
+                                        id,
+                                        ...personality,
+                                        birthYear,
+                                        deathYear,
+                                        oficioName,
+                                        birthIsAC,
+                                        deathIsAC
+                                    };
+                                } catch (error) {
+                                    console.error(`Error processing personality ${id}:`, error);
+                                    return null;
+                                }
+                            })
+                    );
+
+                    allPersonalities = allPersonalities
+                        .filter(p => p !== null)
+                        .sort((a, b) => b.id.localeCompare(a.id))
+                        .slice(0, 30);
+
+                    if (allPersonalities.length === 0) {
+                        document.getElementById('personalities-container').innerHTML =
+                            '<div class="error">Nenhuma personalidade encontrada</div>';
+                    } else {
+                        displayPersonalities(allPersonalities);
+                    }
+                } else {
+                    document.getElementById('personalities-container').innerHTML =
+                        '<div class="error">Nenhuma personalidade encontrada</div>';
+                }
+            } catch (error) {
+                console.error('Error loading personalities:', error);
+                document.getElementById('personalities-container').innerHTML =
+                    '<div class="error">Erro ao carregar personalidades. Por favor, tente novamente mais tarde.</div>';
+            }
+        }
+
+        function displayPersonalities(personalities) {
+            const container = document.getElementById('personalities-container');
+            if (personalities.length === 0) {
+                container.innerHTML = '<div class="error">Nenhuma personalidade encontrada</div>';
+                return;
+            }
+
+            container.innerHTML = personalities.map(personality => {
+                console.log(`Displaying personality: ${personality.name}, birthYear: ${personality.birthYear}, deathYear: ${personality.deathYear}, birthIsAC: ${personality.birthIsAC}, deathIsAC: ${personality.deathIsAC}`);
+
+                let birthYearDisplay = personality.birthYear ? personality.birthYear : '?';
+                let deathYearDisplay = personality.deathYear ? personality.deathYear : 'Presente';
+                let birthSuffix = personality.birthIsAC ? ' a.C.' : '';
+                let deathSuffix = personality.deathIsAC ? ' a.C.' : '';
+
+                if (personality.birthYear && personality.deathYear) {
+                    birthYearDisplay = personality.birthYear;
+                    deathYearDisplay = personality.deathYear;
+                } else if (personality.birthYear && personality.deathYear === null) {
+                    birthYearDisplay = personality.birthYear;
+                    deathYearDisplay = 'Presente';
+                } else if (personality.birthYear === null && personality.deathYear) {
+                    birthYearDisplay = '?';
+                    deathYearDisplay = personality.deathYear;
+                }
+
+                // Generate a consistent color based on the occupation name
+                const getOccupationColor = (ocupacao) => {
+                    const colors = {
+                        'Cantor': '#1a237e', // Dark blue
+                        'Astronauta': '#757575', // Light gray
+                        'Cientista': '#004d40', // Dark teal
+                        'Artista': '#880e4f', // Dark pink
+                        'Escritor': '#4a148c', // Dark purple
+                        'Político': '#b71c1c', // Dark red
+                        'Filósofo': '#3e2723', // Dark brown
+                        'Inventor': '#ff6f00', // Dark orange
+                        'Médico': '#1b5e20', // Dark green
+                        'Atleta': '#01579b'  // Dark cyan
+                    };
+                    
+                    if (colors[ocupacao]) {
+                        return colors[ocupacao];
+                    }
+                    
+                    // Generate a consistent color for unknown occupations
+                    let hash = 0;
+                    for (let i = 0; i < ocupacao.length; i++) {
+                        hash = ocupacao.charCodeAt(i) + ((hash << 5) - hash);
+                    }
+                    const hue = Math.abs(hash % 360);
+                    return `hsl(${hue}, 70%, 35%)`;
+                };
+
+                return `
+                    <a href="personalidade.html?id=${personality.id}" class="personality-card">
+                        <img src="${personality.imageUrl || 'placeholder-image.jpg'}"
+                             alt="${personality.name}"
+                             class="personality-image"
+                             onerror="this.src='https://via.placeholder.it/300x200?text=Imagem+n%C3%A3o+dispon%C3%ADvel'">
+                        <div class="personality-info">
+                            <div class="personality-chip" style="background-color: ${getOccupationColor(personality.oficioName)}">${personality.oficioName}</div>
+                            <div class="personality-name">${personality.name}</div>
+                            <div class="personality-description">${personality.description || 'Sem descrição disponível'}</div>
+                            <div class="personality-dates">${birthYearDisplay}${birthSuffix} &nbsp;-&nbsp; ${deathYearDisplay}${deathSuffix}</div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        function filterPersonalities(searchTerm) {
+            const filtered = allPersonalities.filter(personality => {
+                const matchesSearch = personality.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (personality.description && personality.description.toLowerCase().includes(searchTerm.toLowerCase()));
+                const matchesOficio = !selectedOficioId || personality.oficioId === selectedOficioId;
+                
+                let matchesDateRange = true;
+                if (selectedDateRange !== null) {
+                    const range = dateRanges[selectedDateRange];
+                    const birthYear = personality.birthYear * (personality.birthIsAC ? -1 : 1);
+                    const deathYear = personality.deathYear * (personality.deathIsAC ? -1 : 1);
+                    
+                    if (birthYear && deathYear) {
+                        matchesDateRange = (birthYear <= range.end && deathYear >= range.start);
+                    } else if (birthYear) {
+                        matchesDateRange = (birthYear >= range.start && birthYear <= range.end);
+                    } else if (deathYear) {
+                        matchesDateRange = (deathYear >= range.start && deathYear <= range.end);
+                    }
+                }
+
+                return matchesSearch && matchesOficio && matchesDateRange;
+            });
+            displayPersonalities(filtered);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            filterPersonalities(e.target.value);
+        });
+
+        const oficioSearch = document.getElementById('oficioSearch');
+        const oficioSearchResults = document.getElementById('oficioSearchResults');
+        let selectedOficioId = '';
+        let selectedDateRange = null;
+
+        const dateRanges = [
+            { start: -4026, end: -3740, label: '4026 a.C. – 3740 a.C.' },
+            { start: -3740, end: -3452, label: '3740 a.C. – 3452 a.C.' },
+            { start: -3452, end: -3164, label: '3452 a.C. – 3164 a.C.' },
+            { start: -3164, end: -2876, label: '3164 a.C. – 2876 a.C.' },
+            { start: -2876, end: -2588, label: '2876 a.C. – 2588 a.C.' },
+            { start: -2588, end: -2300, label: '2588 a.C. – 2300 a.C.' },
+            { start: -2300, end: -2012, label: '2300 a.C. – 2012 a.C.' },
+            { start: -2012, end: -1724, label: '2012 a.C. – 1724 a.C.' },
+            { start: -1724, end: -1436, label: '1724 a.C. – 1436 a.C.' },
+            { start: -1436, end: -1148, label: '1436 a.C. – 1148 a.C.' },
+            { start: -1148, end: -860, label: '1148 a.C. – 860 a.C.' },
+            { start: -860, end: -572, label: '860 a.C. – 572 a.C.' },
+            { start: -572, end: -284, label: '572 a.C. – 284 a.C.' },
+            { start: -284, end: 0, label: '284 a.C. – 0 d.C.' },
+            { start: 0, end: 284, label: '0 d.C. – 284 d.C.' },
+            { start: 284, end: 572, label: '284 d.C. – 572 d.C.' },
+            { start: 572, end: 860, label: '572 d.C. – 860 d.C.' },
+            { start: 860, end: 1148, label: '860 d.C. – 1148 d.C.' },
+            { start: 1148, end: 1436, label: '1148 d.C. – 1436 d.C.' },
+            { start: 1436, end: 1724, label: '1436 d.C. – 1724 d.C.' },
+            { start: 1724, end: 2025, label: '1724 d.C. – 2025 d.C.' },
+            { start: 2025, end: 2313, label: '2025 d.C. – 2313 d.C.' }
+        ];
+
+        function createDateFilters() {
+            const container = document.getElementById('dateFilters');
+            dateRanges.forEach((range, index) => {
+                const button = document.createElement('button');
+                button.className = 'date-filter-btn';
+                button.textContent = range.label;
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.date-filter-btn').forEach(btn => btn.classList.remove('active'));
+                    if (selectedDateRange === index) {
+                        selectedDateRange = null;
+                    } else {
+                        button.classList.add('active');
+                        selectedDateRange = index;
+                    }
+                    filterPersonalities(document.getElementById('searchInput').value);
+                });
+                container.appendChild(button);
+            });
+        }
+
+        oficioSearch.addEventListener('input', () => {
+            const searchText = oficioSearch.value.toLowerCase();
+            oficioSearchResults.innerHTML = '';
+
+            if (searchText.length > 0) {
+                const matchingOficios = allOficios.filter(oficio =>
+                    oficio.nome && oficio.nome.toLowerCase().includes(searchText)
+                );
+
+                if (matchingOficios.length > 0) {
+                    oficioSearchResults.style.display = 'block';
+                    matchingOficios.forEach(oficio => {
+                        const div = document.createElement('div');
+                        div.className = 'search-result-item';
+                        div.textContent = oficio.nome;
+                        div.addEventListener('click', () => {
+                            oficioSearch.value = oficio.nome;
+                            selectedOficioId = oficio.id;
+                            oficioSearchResults.style.display = 'none';
+                            filterPersonalities(document.getElementById('searchInput').value);
+                        });
+                        oficioSearchResults.appendChild(div);
+                    });
+                } else {
+                    oficioSearchResults.style.display = 'none';
+                }
+            } else {
+                oficioSearchResults.style.display = 'none';
+                selectedOficioId = '';
+                filterPersonalities(document.getElementById('searchInput').value);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!oficioSearch.contains(e.target) && !oficioSearchResults.contains(e.target)) {
+                oficioSearchResults.style.display = 'none';
+            }
+        });
+
+        oficioSearch.addEventListener('change', function () {
+            if (!this.value) {
+                selectedOficioId = '';
+                filterPersonalities(document.getElementById('searchInput').value);
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!oficioSearch.contains(e.target) && !oficioSearchResults.contains(e.target)) {
+                oficioSearchResults.style.display = 'none';
+            }
+        });
+
+        document.getElementById('toggleDateFilters').addEventListener('click', (e) => {
+            const dateFilters = document.getElementById('dateFilters');
+            const button = e.target;
+            dateFilters.classList.toggle('active');
+            button.classList.toggle('active');
+        });
+
+        await Promise.all([loadPersonalities(), loadOficios()]);
+        createDateFilters();
+    </script>
+</body>
+</html>

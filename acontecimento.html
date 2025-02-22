@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRONO LOGIAS - Acontecimento</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="index.html">CRONO LOGIAS</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="neste-dia.html" class="nav-item">NESTE DIA</a>
+                <a href="top-mundial.html" class="nav-item">TOP MUNDIAL</a>
+                <a href="por-tema.html" class="nav-item">POR TEMA</a>
+                <a href="por-ano.html" class="nav-item">POR ANO</a>
+                <a href="personalidades.html" class="nav-item">PERSONALIDADES</a>
+                <a href="a-linha.html" class="nav-item">A LINHA</a>
+                <a href="criar.html" class="nav-item">CRIAR</a>
+            </nav>
+        </div>
+        <main class="main-content">
+            <div id="acontecimentoDetails" class="acontecimento-container">
+                <div class="loading">Carregando...</div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+        .acontecimento-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 40px;
+        }
+        .acontecimento-left {
+            position: sticky;
+            top: 20px;
+        }
+        .acontecimento-image {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+        .chips-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .chip {
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #333;
+            display: inline-flex;
+            align-items: center;
+        }
+        .acontecimento-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .date-range {
+            color: #666;
+            font-size: 16px;
+        }
+        .eventos-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .eventos-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #ddd;
+        }
+        .evento-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .evento-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 50%;
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border: 3px solid white;
+            border-radius: 50%;
+            transform: translateY(-50%);
+        }
+        .evento-date {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .evento-name {
+            font-size: 16px;
+            color: #333;
+        }
+        @media (max-width: 768px) {
+            .acontecimento-container {
+                grid-template-columns: 1fr;
+            }
+            .acontecimento-left {
+                position: static;
+            }
+        }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebasestorage.app",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        async function loadAcontecimentoDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const acontecimentoId = urlParams.get('id');
+
+            if (!acontecimentoId) {
+                document.getElementById('acontecimentoDetails').innerHTML = '<p>Acontecimento não encontrado</p>';
+                return;
+            }
+
+            try {
+                const acontecimentoRef = ref(database, `acontecimentos/${acontecimentoId}`);
+                const eventosRef = ref(database, `eventos`);
+                
+                const [acontecimentoSnapshot, eventosSnapshot] = await Promise.all([
+                    get(acontecimentoRef),
+                    get(eventosRef)
+                ]);
+
+                if (!acontecimentoSnapshot.exists()) {
+                    document.getElementById('acontecimentoDetails').innerHTML = '<p>Acontecimento não encontrado</p>';
+                    return;
+                }
+
+                const acontecimento = acontecimentoSnapshot.val();
+                const todosEventos = eventosSnapshot.val() || {};
+
+                // Filter and sort eventos by date
+                const eventosAcontecimento = Object.entries(todosEventos)
+                    .filter(([_, evento]) => evento.itemId === acontecimentoId)
+                    .map(([id, evento]) => ({
+                        id,
+                        date: evento.date || '',
+                        name: evento.name || ''
+                    }));
+
+                const sortedEventos = eventosAcontecimento
+                    .filter(evento => evento.date && evento.name)
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                // Get date range
+                const dateRange = sortedEventos.length > 0 
+                    ? `${sortedEventos[0].date} - ${sortedEventos[sortedEventos.length - 1].date}`
+                    : 'Data não disponível';
+
+                const html = `
+                    <div class="acontecimento-left">
+                        <img src="${acontecimento.imageUrl}" alt="${acontecimento.name}" class="acontecimento-image">
+                        <div class="chips-container">
+                            <span class="chip">${acontecimento.theme || 'Sem tema'}</span>
+                            <span class="chip">${acontecimento.subtheme || 'Sem subtema'}</span>
+                        </div>
+                        <h1 class="acontecimento-name">${acontecimento.name}</h1>
+                        <div class="date-range">${dateRange}</div>
+                    </div>
+                    <div class="eventos-timeline">
+                        ${sortedEventos.map(evento => `
+                            <div class="evento-item">
+                                <div class="evento-date">${evento.date}</div>
+                                <div class="evento-name">${evento.name}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                document.getElementById('acontecimentoDetails').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading acontecimento:', error);
+                document.getElementById('acontecimentoDetails').innerHTML = '<p>Erro ao carregar o acontecimento</p>';
+            }
+        }
+
+        loadAcontecimentoDetails();
+    </script>
+</body>
+</html>

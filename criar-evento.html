@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Evento - CRONO LOGIAS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="index.html">CRONO LOGIAS</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="neste-dia.html" class="nav-item">NESTE DIA</a>
+                <a href="top-mundial.html" class="nav-item">TOP MUNDIAL</a>
+                <a href="por-tema.html" class="nav-item">POR TEMA</a>
+                <a href="por-ano.html" class="nav-item">POR ANO</a>
+                <a href="personalidades.html" class="nav-item">PERSONALIDADES</a>
+                <a href="a-linha.html" class="nav-item">A LINHA</a>
+                <a href="criar.html" class="nav-item">CRIAR</a>
+            </nav>
+        </div>
+        <main class="main-content">
+            <div class="submenu">
+                <a href="criar-oficio.html" class="submenu-button">Criar Novo Ofício</a>
+                <a href="criar-tema.html" class="submenu-button">Criar Tema</a>
+                <a href="criar-subtema.html" class="submenu-button">Criar subTema</a>
+                <a href="criar-evento.html" class="submenu-button">Criar Evento</a>
+                <a href="criar-acontecimento.html" class="submenu-button">Criar Acontecimento</a>
+                <a href="criar-personalidade.html" class="submenu-button">Criar Personalidade</a>
+            </div>
+            <h1>Criar Evento</h1>
+            <form id="eventoForm" class="create-form">
+                <div class="form-group">
+                    <label for="eventoName">Nome do Evento:</label>
+                    <input type="text" id="eventoName" name="eventoName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="acontecimentoSearch">Acontecimento / Personalidade:</label>
+                    <div class="search-container">
+                        <input type="text" id="acontecimentoSearch" name="acontecimentoSearch" placeholder="Pesquisar acontecimentos ou personalidades" autocomplete="off">
+                        <div id="acontecimentoResults" class="search-results"></div>
+                    </div>
+                    <input type="hidden" id="selectedItemId" name="selectedItemId" required>
+                    <input type="hidden" id="selectedItemType" name="selectedItemType" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="themeSearch">Pesquisar Tema:</label>
+                    <div class="search-container">
+                        <input type="text" id="themeSearch" name="themeSearch" placeholder="Digite para pesquisar temas" autocomplete="off">
+                        <div id="themeResults" class="search-results"></div>
+                    </div>
+                    <input type="hidden" id="selectedThemeId" name="selectedThemeId" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="subthemeSelect">Pesquisar subtemas:</label>
+                    <select id="subthemeSelect" name="subthemeSelect" required>
+                        <option value="">Selecione um subtema</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Data do Evento:</label>
+                    <div class="date-inputs">
+                        <input type="number" id="eventDay" placeholder="Dia" min="1" max="31" required>
+                        <input type="number" id="eventMonth" placeholder="Mês" min="1" max="12" required>
+                        <input type="number" id="eventYear" placeholder="Ano" required>
+                        <select id="eraSelect">
+                            <option value="AD">D.C.</option>
+                            <option value="BC">A.C.</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="autoDate">Data automática:</label>
+                    <input type="text" id="autoDate" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="eventImage">Imagem do Evento:</label>
+                    <input type="url" id="eventImage" name="eventImage" required>
+                </div>
+
+                <button type="submit" class="submit-button">Criar Evento</button>
+            </form>
+            <div id="message" class="message"></div>
+        </main>
+    </div>
+
+    <style>
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        .search-results {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .search-result-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .search-result-item:hover {
+            background-color: #f5f5f5;
+        }
+        .date-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .date-inputs input {
+            width: 80px;
+        }
+        .date-inputs select {
+            width: 100px;
+        }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, get, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebasestorage.app",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let allThemes = [];
+        let allAcontecimentos = [];
+        let allPersonalidades = [];
+
+        const searchInputs = {
+            acontecimento: document.getElementById('acontecimentoSearch'),
+            theme: document.getElementById('themeSearch')
+        };
+
+        const searchResults = {
+            acontecimento: document.getElementById('acontecimentoResults'),
+            theme: document.getElementById('themeResults')
+        };
+
+        const selectedIds = {
+            item: document.getElementById('selectedItemId'),
+            itemType: document.getElementById('selectedItemType'),
+            theme: document.getElementById('selectedThemeId')
+        };
+
+        const subthemeSelect = document.getElementById('subthemeSelect');
+        const messageDiv = document.getElementById('message');
+
+        // Date handling
+        const dateInputs = {
+            day: document.getElementById('eventDay'),
+            month: document.getElementById('eventMonth'),
+            year: document.getElementById('eventYear'),
+            era: document.getElementById('eraSelect')
+        };
+
+        const autoDateInput = document.getElementById('autoDate');
+
+        function updateAutoDate() {
+            const day = dateInputs.day.value.padStart(2, '0');
+            const month = dateInputs.month.value.padStart(2, '0');
+            const year = dateInputs.year.value.padStart(4, '0');
+            const era = dateInputs.era.value === 'BC' ? '-' : '';
+            
+            if (day && month && year) {
+                autoDateInput.value = `${day}-${month}-${era}${year}`;
+            }
+        }
+
+        Object.values(dateInputs).forEach(input => {
+            input.addEventListener('input', updateAutoDate);
+        });
+
+        // Load data when page loads
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Load themes
+                const temasRef = ref(database, 'temas');
+                const temasSnapshot = await get(temasRef);
+                if (temasSnapshot.exists()) {
+                    temasSnapshot.forEach((childSnapshot) => {
+                        allThemes.push({
+                            id: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                    allThemes.sort((a, b) => a.name.localeCompare(b.name));
+                }
+
+                // Load acontecimentos
+                const acontecimentosRef = ref(database, 'acontecimentos');
+                const acontecimentosSnapshot = await get(acontecimentosRef);
+                if (acontecimentosSnapshot.exists()) {
+                    acontecimentosSnapshot.forEach((childSnapshot) => {
+                        allAcontecimentos.push({
+                            id: childSnapshot.key,
+                            type: 'acontecimento',
+                            ...childSnapshot.val()
+                        });
+                    });
+                }
+
+                // Load personalidades
+                const personalidadesRef = ref(database, 'personalidades');
+                const personalidadesSnapshot = await get(personalidadesRef);
+                if (personalidadesSnapshot.exists()) {
+                    personalidadesSnapshot.forEach((childSnapshot) => {
+                        allPersonalidades.push({
+                            id: childSnapshot.key,
+                            type: 'personalidade',
+                            ...childSnapshot.val()
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                messageDiv.textContent = 'Erro ao carregar dados: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        });
+
+        // Search functionality for acontecimentos and personalidades
+        searchInputs.acontecimento.addEventListener('input', () => {
+            const searchText = searchInputs.acontecimento.value.toLowerCase();
+            if (searchText.length < 1) {
+                searchResults.acontecimento.style.display = 'none';
+                return;
+            }
+
+            const allItems = [
+                ...allAcontecimentos.map(item => ({
+                    ...item,
+                    displayName: item.name || item.theme,
+                    type: 'acontecimento'
+                })),
+                ...allPersonalidades.map(item => ({
+                    ...item,
+                    displayName: item.name,
+                    type: 'personalidade'
+                }))
+            ];
+
+            const filteredItems = allItems.filter(item => 
+                item.displayName && item.displayName.toLowerCase().includes(searchText)
+            );
+            
+            searchResults.acontecimento.innerHTML = '';
+            
+            if (filteredItems.length > 0) {
+                filteredItems.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.innerHTML = `
+                        <div class="result-header">
+                            <span class="result-name">${item.displayName}</span>
+                            ${item.date ? `<span class="result-date">(${item.date})</span>` : ''}
+                        </div>
+                        <div class="result-type">${item.type === 'acontecimento' ? 'Acontecimento' : 'Personalidade'}</div>
+                    `;
+                    div.style.cssText = `
+                        padding: 10px 15px;
+                        border-bottom: 1px solid #eee;
+                    `;
+                    div.addEventListener('click', () => {
+                        searchInputs.acontecimento.value = item.displayName;
+                        selectedIds.item.value = item.id;
+                        selectedIds.itemType.value = item.type;
+                        searchResults.acontecimento.style.display = 'none';
+                    });
+                    searchResults.acontecimento.appendChild(div);
+                });
+                searchResults.acontecimento.style.display = 'block';
+            } else {
+                const div = document.createElement('div');
+                div.className = 'search-result-item';
+                div.textContent = 'Nenhum resultado encontrado';
+                searchResults.acontecimento.appendChild(div);
+                searchResults.acontecimento.style.display = 'block';
+            }
+        });
+
+        // Search functionality for themes
+        searchInputs.theme.addEventListener('input', () => {
+            const searchText = searchInputs.theme.value.toLowerCase();
+            const filteredThemes = allThemes.filter(theme => 
+                theme.name.toLowerCase().includes(searchText)
+            );
+            
+            if (searchText && filteredThemes.length > 0) {
+                searchResults.theme.innerHTML = '';
+                filteredThemes.forEach(theme => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.textContent = theme.name;
+                    div.addEventListener('click', () => {
+                        searchInputs.theme.value = theme.name;
+                        selectedIds.theme.value = theme.id;
+                        searchResults.theme.style.display = 'none';
+                        loadSubthemes(theme.id);
+                    });
+                    searchResults.theme.appendChild(div);
+                });
+                searchResults.theme.style.display = 'block';
+            } else {
+                searchResults.theme.style.display = 'none';
+            }
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            Object.entries(searchInputs).forEach(([key, input]) => {
+                if (!input.contains(e.target) && !searchResults[key].contains(e.target)) {
+                    searchResults[key].style.display = 'none';
+                }
+            });
+        });
+
+        // Load subthemes when a theme is selected
+        async function loadSubthemes(themeId) {
+            const subtemasRef = ref(database, 'subtemas');
+            subthemeSelect.innerHTML = '<option value="">Selecione um subtema</option>';
+
+            try {
+                const snapshot = await get(subtemasRef);
+                if (snapshot.exists()) {
+                    const subtemas = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const subtema = childSnapshot.val();
+                        if (subtema.themeId === themeId) {
+                            subtemas.push({
+                                id: childSnapshot.key,
+                                ...subtema
+                            });
+                        }
+                    });
+
+                    subtemas.sort((a, b) => a.name.localeCompare(b.name));
+
+                    subtemas.forEach((subtema) => {
+                        const option = document.createElement('option');
+                        option.value = subtema.id;
+                        option.textContent = subtema.name;
+                        subthemeSelect.appendChild(option);
+                    });
+
+                    if (subtemas.length === 0) {
+                        messageDiv.textContent = 'Nenhum subtema encontrado para este tema';
+                        messageDiv.className = 'message info';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading subthemes:', error);
+                messageDiv.textContent = 'Error loading subthemes: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('eventoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const eventoName = document.getElementById('eventoName').value.trim();
+            const eventImage = document.getElementById('eventImage').value.trim();
+
+            if (!selectedIds.item.value || !selectedIds.itemType.value || 
+                !selectedIds.theme.value || !subthemeSelect.value) {
+                messageDiv.textContent = 'Por favor, preencha todos os campos';
+                messageDiv.className = 'message error';
+                return;
+            }
+
+            try {
+                // Create the event
+                const eventosRef = ref(database, 'eventos');
+                const newEventRef = await push(eventosRef, {
+                    name: eventoName,
+                    itemId: selectedIds.item.value,
+                    itemType: selectedIds.itemType.value,
+                    themeId: selectedIds.theme.value,
+                    subthemeId: subthemeSelect.value,
+                    date: autoDateInput.value,
+                    imageUrl: eventImage
+                });
+
+                // Create relationships with proper path construction
+                const relationships = {};
+                
+                // Add relationship for tema
+                if (selectedIds.theme.value) {
+                    relationships[`temas/${selectedIds.theme.value}/eventos/${newEventRef.key}`] = true;
+                }
+                
+                // Add relationship for subtema
+                if (subthemeSelect.value) {
+                    relationships[`subtemas/${subthemeSelect.value}/eventos/${newEventRef.key}`] = true;
+                }
+                
+                // Add relationship for acontecimento or personalidade
+                if (selectedIds.item.value && selectedIds.itemType.value) {
+                    const itemTypePath = selectedIds.itemType.value === 'acontecimento' ? 'acontecimentos' : 'personalidades';
+                    relationships[`${itemTypePath}/${selectedIds.item.value}/eventos/${newEventRef.key}`] = true;
+                }
+
+                // Update all relationships at once
+                const updates = {};
+                Object.entries(relationships).forEach(([path, value]) => {
+                    updates[path] = value;
+                });
+
+                await update(ref(database), updates);
+
+                messageDiv.textContent = 'Evento criado com sucesso!';
+                messageDiv.className = 'message success';
+                document.getElementById('eventoForm').reset();
+                selectedIds.item.value = '';
+                selectedIds.theme.value = '';
+                autoDateInput.value = '';
+            } catch (error) {
+                console.error('Error creating event:', error);
+                messageDiv.textContent = 'Erro ao criar evento: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        });
+    </script>
+</body>
+</html>
+</body>
+</html>
+<style>
+.result-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.result-name {
+    font-weight: 500;
+}
+
+.result-date {
+    color: #666;
+}
+
+.result-type {
+    font-size: 0.9em;
+    color: #666;
+}
+</style>

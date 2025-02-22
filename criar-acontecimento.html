@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Acontecimento - CRONO LOGIAS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="index.html">CRONO LOGIAS</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="neste-dia.html" class="nav-item">NESTE DIA</a>
+                <a href="top-mundial.html" class="nav-item">TOP MUNDIAL</a>
+                <a href="por-tema.html" class="nav-item">POR TEMA</a>
+                <a href="por-ano.html" class="nav-item">POR ANO</a>
+                <a href="personalidades.html" class="nav-item">PERSONALIDADES</a>
+                <a href="criar.html" class="nav-item">CRIAR</a>
+            </nav>
+        </div>
+        <main class="main-content">
+            <div class="submenu">
+                <a href="criar-oficio.html" class="submenu-button">Criar Novo Ofício</a>
+                <a href="criar-tema.html" class="submenu-button">Criar Tema</a>
+                <a href="criar-subtema.html" class="submenu-button">Criar subTema</a>
+                <a href="criar-evento.html" class="submenu-button">Criar Evento</a>
+                <a href="criar-acontecimento.html" class="submenu-button">Criar Acontecimento</a>
+                <a href="criar-personalidade.html" class="submenu-button">Criar Personalidade</a>
+            </div>
+            <h1>Criar Acontecimento</h1>
+            <form id="acontecimentoForm" class="create-form">
+                <div class="form-group">
+                    <label for="themeSearch">Pesquisar Tema:</label>
+                    <div class="search-container">
+                        <input type="text" id="themeSearch" name="themeSearch" placeholder="Digite para pesquisar temas" autocomplete="off">
+                        <div id="themeResults" class="search-results"></div>
+                    </div>
+                    <input type="hidden" id="selectedThemeId" name="selectedThemeId" required>
+                </div>
+                <div class="form-group">
+                    <label for="subthemeSelect">Pesquisar subtemas:</label>
+                    <select id="subthemeSelect" name="subthemeSelect" required>
+                        <option value="">Selecione um subtema</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="acontecimentoName">Nome do Acontecimento:</label>
+                    <input type="text" id="acontecimentoName" name="acontecimentoName" required>
+                </div>
+                <div class="form-group">
+                    <label for="acontecimentoImage">Imagem do Acontecimento:</label>
+                    <input type="url" id="acontecimentoImage" name="acontecimentoImage" required>
+                </div>
+                <button type="submit" class="submit-button">Criar Acontecimento</button>
+            </form>
+            <div id="message" class="message"></div>
+        </main>
+    </div>
+    <style>
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        .search-results {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .search-result-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .search-result-item:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebasestorage.app",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let allThemes = [];
+        const searchInput = document.getElementById('themeSearch');
+        const searchResults = document.getElementById('themeResults');
+        const selectedThemeId = document.getElementById('selectedThemeId');
+        const subthemeSelect = document.getElementById('subthemeSelect');
+        const messageDiv = document.getElementById('message');
+
+        // Load themes when page loads
+        window.addEventListener('DOMContentLoaded', async () => {
+            const temasRef = ref(database, 'temas');
+
+            try {
+                const snapshot = await get(temasRef);
+                if (snapshot.exists()) {
+                    // Convert snapshot to array for sorting
+                    snapshot.forEach((childSnapshot) => {
+                        allThemes.push({
+                            id: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+                    
+                    // Sort themes alphabetically by name
+                    allThemes.sort((a, b) => a.name.localeCompare(b.name));
+                } else {
+                    messageDiv.textContent = 'Nenhum tema encontrado no banco de dados';
+                    messageDiv.className = 'message error';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar temas:', error);
+                messageDiv.textContent = 'Erro ao carregar temas: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        });
+
+        // Search functionality
+        searchInput.addEventListener('input', () => {
+            const searchText = searchInput.value.toLowerCase();
+            const filteredThemes = allThemes.filter(theme => 
+                theme.name.toLowerCase().includes(searchText)
+            );
+            
+            if (searchText && filteredThemes.length > 0) {
+                searchResults.innerHTML = '';
+                filteredThemes.forEach(theme => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.textContent = theme.name;
+                    div.addEventListener('click', () => {
+                        searchInput.value = theme.name;
+                        selectedThemeId.value = theme.id;
+                        searchResults.style.display = 'none';
+                        loadSubthemes(theme.id);
+                    });
+                    searchResults.appendChild(div);
+                });
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        // Load subthemes when a theme is selected
+        async function loadSubthemes(themeId) {
+            const subtemasRef = ref(database, 'subtemas');
+            subthemeSelect.innerHTML = '<option value="">Selecione um subtema</option>';
+
+            try {
+                const snapshot = await get(subtemasRef);
+                if (snapshot.exists()) {
+                    const subtemas = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const subtema = childSnapshot.val();
+                        if (subtema.themeId === themeId) {
+                            subtemas.push({
+                                id: childSnapshot.key,
+                                ...subtema
+                            });
+                        }
+                    });
+
+                    // Sort subtemas alphabetically by name
+                    subtemas.sort((a, b) => a.name.localeCompare(b.name));
+
+                    // Add sorted subtemas to select
+                    subtemas.forEach((subtema) => {
+                        const option = document.createElement('option');
+                        option.value = subtema.id;
+                        option.textContent = subtema.name;
+                        subthemeSelect.appendChild(option);
+                    });
+
+                    if (subtemas.length === 0) {
+                        messageDiv.textContent = 'Nenhum subtema encontrado para este tema';
+                        messageDiv.className = 'message info';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading subthemes:', error);
+                messageDiv.textContent = 'Error loading subthemes: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('acontecimentoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const themeId = selectedThemeId.value;
+            const subthemeId = subthemeSelect.value;
+            const acontecimentoName = document.getElementById('acontecimentoName').value.trim();
+            const acontecimentoImage = document.getElementById('acontecimentoImage').value.trim();
+
+            if (!themeId || !subthemeId) {
+                messageDiv.textContent = 'Por favor, selecione um tema e um subtema';
+                messageDiv.className = 'message error';
+                return;
+            }
+
+            try {
+                // Get theme name
+                const selectedTheme = allThemes.find(theme => theme.id === themeId);
+                if (!selectedTheme) throw new Error('Tema não encontrado');
+
+                // Get subtheme name
+                const subtemasRef = ref(database, 'subtemas');
+                const subtemasSnapshot = await get(subtemasRef);
+                let subthemeName = '';
+                
+                if (subtemasSnapshot.exists()) {
+                    subtemasSnapshot.forEach((childSnapshot) => {
+                        if (childSnapshot.key === subthemeId) {
+                            subthemeName = childSnapshot.val().name;
+                        }
+                    });
+                }
+
+                if (!subthemeName) throw new Error('Subtema não encontrado');
+
+                const acontecimentosRef = ref(database, 'acontecimentos');
+                await push(acontecimentosRef, {
+                    themeId,
+                    subthemeId,
+                    theme: selectedTheme.name,
+                    subtheme: subthemeName,
+                    name: acontecimentoName,
+                    imageUrl: acontecimentoImage
+                });
+
+                messageDiv.textContent = 'Acontecimento criado com sucesso!';
+                messageDiv.className = 'message success';
+                document.getElementById('acontecimentoForm').reset();
+                selectedThemeId.value = '';
+            } catch (error) {
+                console.error('Error creating acontecimento:', error);
+                messageDiv.textContent = 'Erro ao criar acontecimento: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        });
+    </script>
+</body>
+</html>

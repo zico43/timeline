@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Personalidade - CRONO LOGIAS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="index.html">CRONO LOGIAS</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="neste-dia.html" class="nav-item">NESTE DIA</a>
+                <a href="top-mundial.html" class="nav-item">TOP MUNDIAL</a>
+                <a href="por-tema.html" class="nav-item">POR TEMA</a>
+                <a href="por-ano.html" class="nav-item">POR ANO</a>
+                <a href="personalidades.html" class="nav-item">PERSONALIDADES</a>
+                <a href="a-linha.html" class="nav-item">A LINHA</a>
+                <a href="criar.html" class="nav-item">CRIAR</a>
+            </nav>
+        </div>
+        <main class="main-content">
+            <div class="submenu">
+                <a href="criar-oficio.html" class="submenu-button">Criar Novo Ofício</a>
+                <a href="criar-tema.html" class="submenu-button">Criar Tema</a>
+                <a href="criar-subtema.html" class="submenu-button">Criar subTema</a>
+                <a href="criar-evento.html" class="submenu-button">Criar Evento</a>
+                <a href="criar-acontecimento.html" class="submenu-button">Criar Acontecimento</a>
+                <a href="criar-personalidade.html" class="submenu-button">Criar Personalidade</a>
+            </div>
+            <h1>Criar Personalidade</h1>
+            <form id="personalidadeForm" class="create-form">
+                <div class="form-group">
+                    <label for="oficioSearch">Pesquisar Ofício:</label>
+                    <div class="search-container">
+                        <input type="text" id="oficioSearch" name="oficioSearch" placeholder="Digite para pesquisar ofícios..." autocomplete="off">
+                        <div id="searchResults" class="search-results"></div>
+                        <input type="hidden" id="selectedOficioId" name="selectedOficioId" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="personalidadeName">Nome da Personalidade:</label>
+                    <input type="text" id="personalidadeName" name="personalidadeName" required>
+                </div>
+                <div class="form-group">
+                    <label for="personalidadeDesc">Descrição:</label>
+                    <textarea id="personalidadeDesc" name="personalidadeDesc" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="personalidadeImage">Imagem da Personalidade:</label>
+                    <input type="url" id="personalidadeImage" name="personalidadeImage" required>
+                </div>
+                <button type="submit" class="submit-button">Criar Personalidade</button>
+            </form>
+            <div id="message" class="message"></div>
+        </main>
+    </div>
+    <style>
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        .search-results {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .search-result-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .search-result-item:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebasestorage.app",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let allOficios = [];
+        const searchInput = document.getElementById('oficioSearch');
+        const searchResults = document.getElementById('searchResults');
+        const selectedOficioId = document.getElementById('selectedOficioId');
+
+        // Load oficios when page loads
+        window.addEventListener('DOMContentLoaded', async () => {
+            const oficiosRef = ref(database, 'oficios');
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const snapshot = await get(oficiosRef);
+                if (snapshot.exists()) {
+                    // Clear existing options except the default one
+                    searchResults.innerHTML = '';
+                    
+                    // Convert snapshot to array and store in allOficios
+                    snapshot.forEach((childSnapshot) => {
+                        const oficioData = childSnapshot.val();
+                        if (oficioData && oficioData.nome) {
+                            allOficios.push({
+                                id: childSnapshot.key,
+                                ...oficioData
+                            });
+                        }
+                    });
+                    
+                    // Sort oficios alphabetically by name
+                    allOficios.sort((a, b) => a.nome.localeCompare(b.nome));
+                } else {
+                    messageDiv.textContent = 'Nenhum ofício encontrado no banco de dados';
+                    messageDiv.className = 'message error';
+                }
+            } catch (error) {
+                console.error('Error loading oficios:', error);
+                messageDiv.textContent = 'Error loading oficios: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        });
+
+        // Search functionality
+        searchInput.addEventListener('input', () => {
+            const searchText = searchInput.value.toLowerCase();
+            const filteredOficios = allOficios.filter(oficio => 
+                oficio.nome.toLowerCase().includes(searchText)
+            );
+            
+            if (searchText && filteredOficios.length > 0) {
+                searchResults.innerHTML = '';
+                filteredOficios.forEach(oficio => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.textContent = oficio.nome;
+                    div.addEventListener('click', () => {
+                        searchInput.value = oficio.nome;
+                        selectedOficioId.value = oficio.id;
+                        searchResults.style.display = 'none';
+                    });
+                    searchResults.appendChild(div);
+                });
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('personalidadeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const personalidadeName = document.getElementById('personalidadeName').value.trim();
+            const personalidadeDesc = document.getElementById('personalidadeDesc').value.trim();
+            const personalidadeImage = document.getElementById('personalidadeImage').value.trim();
+            const messageDiv = document.getElementById('message');
+
+            if (!selectedOficioId.value) {
+                messageDiv.textContent = 'Por favor, selecione um ofício';
+                messageDiv.className = 'message error';
+                return;
+            }
+
+            try {
+                const selectedOficio = allOficios.find(o => o.id === selectedOficioId.value);
+                const personalidadesRef = ref(database, 'personalidades');
+                await push(personalidadesRef, {
+                    oficioId: selectedOficioId.value,
+                    oficioName: selectedOficio.nome,
+                    name: personalidadeName,
+                    description: personalidadeDesc,
+                    imageUrl: personalidadeImage
+                });
+
+                messageDiv.textContent = 'Personalidade criada com sucesso!';
+                messageDiv.className = 'message success';
+                document.getElementById('personalidadeForm').reset();
+                selectedOficioId.value = '';
+            } catch (error) {
+                messageDiv.textContent = 'Erro ao criar personalidade: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        });
+    </script>
+</body>
+</html>

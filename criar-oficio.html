@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Ofício - CRONO LOGIAS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="index.html">CRONO LOGIAS</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="neste-dia.html" class="nav-item">NESTE DIA</a>
+                <a href="top-mundial.html" class="nav-item">TOP MUNDIAL</a>
+                <a href="por-tema.html" class="nav-item">POR TEMA</a>
+                <a href="por-ano.html" class="nav-item">POR ANO</a>
+                <a href="personalidades.html" class="nav-item">PERSONALIDADES</a>
+                <a href="criar.html" class="nav-item">CRIAR</a>
+            </nav>
+        </div>
+        <main class="main-content">
+            <div class="submenu">
+                <a href="criar-oficio.html" class="submenu-button">Criar Novo Ofício</a>
+                <a href="criar-tema.html" class="submenu-button">Criar Tema</a>
+                <a href="criar-subtema.html" class="submenu-button">Criar subTema</a>
+                <a href="criar-evento.html" class="submenu-button">Criar Evento</a>
+                <a href="criar-acontecimento.html" class="submenu-button">Criar Acontecimento</a>
+                <a href="criar-personalidade.html" class="submenu-button">Criar Personalidade</a>
+            </div>
+            <h1>Criar Novo Ofício</h1>
+            <form id="oficioForm" class="create-form">
+                <div class="form-group">
+                    <label for="nomeOficio">Nome do Ofício:</label>
+                    <input type="text" id="nomeOficio" name="nomeOficio" required>
+                </div>
+                <button type="submit" class="submit-button">Criar Ofício</button>
+            </form>
+            <div id="message" class="message"></div>
+        </main>
+    </div>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebasestorage.app",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        document.getElementById('oficioForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nomeOficio = document.getElementById('nomeOficio').value.trim();
+            const messageDiv = document.getElementById('message');
+
+            if (nomeOficio) {
+                try {
+                    await push(ref(database, 'oficios'), {
+                        nome: nomeOficio,
+                        dataCriacao: new Date().toISOString()
+                    });
+                    messageDiv.textContent = 'Ofício criado com sucesso!';
+                    messageDiv.className = 'message success';
+                    document.getElementById('oficioForm').reset();
+                } catch (error) {
+                    messageDiv.textContent = 'Erro ao criar ofício: ' + error.message;
+                    messageDiv.className = 'message error';
+                }
+            }
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

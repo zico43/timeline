@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalidade - CRONO LOGIAS</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ... (Existing CSS styles - keep them) ... */
+        .personalidade-container {
+            display: flex;
+            gap: 40px;
+            padding: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-sizing: border-box;
+            flex-wrap: wrap;
+        }
+        .personalidade-info {
+            flex: 1;
+            max-width: 400px;
+        }
+        .personalidade-image {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .personalidade-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .personalidade-description {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .personalidade-date-range {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .contemporaneos-panel {
+            background-color: #f8f8f8;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            border: 1px solid #eee;
+            transition: all 0.3s ease;
+        }
+        .contemporaneos-list {
+            display: block;
+            margin-top: 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 0;
+        }
+        .contemporaneos-list.active {
+            display: block;
+            max-height: 800px;
+            opacity: 1;
+        }
+        .contemporaneo-item {
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background-color: white;
+            transition: all 0.3s ease;
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+        .contemporaneo-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            border-color: #ddd;
+        }
+        .contemporaneo-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        .contemporaneo-description {
+            font-style: italic;
+            font-size: 0.9em;
+            color: #666;
+            margin: 4px 0;
+        }
+
+        .contemporaneo-dates {
+            font-size: 0.95em;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contemporaneos-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 28px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+        .contemporaneos-button:hover {
+            background-color: #444;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .contemporaneos-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .contemporaneos-list {
+            margin-top: 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 0;
+        }
+        .contemporaneos-list.active {
+            display: block;
+            max-height: 800px;
+            opacity: 1;
+        }
+        .eventos-timeline {
+            flex: 2;
+            position: relative;
+            padding-left: 50px;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+            min-width: 300px;
+        }
+        .eventos-timeline::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #ddd;
+        }
+        .evento-item {
+            padding: 20px;
+            margin-bottom: 30px;
+            position: relative;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 100%;
+            box-sizing: border-box;
+            display: block;
+            clear: both;
+        }
+        .evento-item::before {
+            content: '';
+            position: absolute;
+            left: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #333;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #ddd;
+            z-index: 1;
+        }
+        .evento-item::after {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 50%;
+            width: 34px;
+            height: 2px;
+            background-color: #ddd;
+        }
+        .evento-date {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .evento-name {
+            line-height: 1.5;
+            color: #444;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: red;
+            padding: 20px;
+            text-align: center;
+        }
+        .contemporaneos-autocomplete-input {
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: white;
+            font-size: 1em;
+            color: #333;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .contemporaneos-autocomplete-input:focus {
+            border-color: #ddd;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+        }
+
+        .autocomplete-list {
+            position: absolute; /* Ensure list is positioned correctly */
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10; /* Ensure it's above other content */
+            display: none; /* Hidden by default, shown by JS */
+        }
+
+        .autocomplete-item {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .autocomplete-container {
+            position: relative; /* Required for absolute positioning of the list */
+            width: 100%; /* Or define a specific width */
+        }
+
+
+    <style>
+        .autocomplete-container {
+            position: relative;
+            width: 100%;
+        }
+        .autocomplete-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .autocomplete-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+        .autocomplete-item:hover {
+            background-color: #f5f5f5;
+        }
+        .contemporaneos-autocomplete-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="index.html">CRONO LOGIAS</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="neste-dia.html" class="nav-item">NESTE DIA</a>
+                <a href="top-mundial.html" class="nav-item">TOP MUNDIAL</a>
+                <a href="por-tema.html" class="nav-item">POR TEMA</a>
+                <a href="por-ano.html" class="nav-item">POR ANO</a>
+                <a href="personalidades.html" class="nav-item">PERSONALIDADES</a>
+                <a href="a-linha.html" class="nav-item">A LINHA</a>
+                <a href="criar.html" class="nav-item">CRIAR</a>
+            </nav>
+        </div>
+        <main class="main-content">
+            <div id="personalidade-content">
+                <div class="loading">Carregando...</div>
+            </div>
+        </main>
+    </div>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, get, query, limitToLast, orderByChild } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY", // Substitua YOUR_API_KEY pela sua API Key real
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebasestorage.app",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Get personality ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const personalidadeId = urlParams.get('id');
+
+
+        let todosOficios = {}; // Variável para guardar todos os oficios (object: {id: nome})
+        let todasPersonalidadesCache = {};
+        let todosEventosCache = {};
+
+        // --- Autocomplete Functions ---
+        function setupAutocomplete(inputElementId, listElementId, data, valueField = 'id', textField = 'nome', recentItemsProvider) {
+            const input = document.getElementById(inputElementId);
+            const list = document.getElementById(listElementId);
+            let selectedValue = null;
+
+            input.addEventListener('focus', async function() {
+                if (!input.value.trim() && recentItemsProvider) {
+                    const recentItems = await recentItemsProvider();
+                    console.log("Recent Items on Focus:", recentItems);
+                    list.innerHTML = '';
+                    if (recentItems && recentItems.length > 0) {
+                        list.style.display = 'block';
+                        recentItems.forEach(item => {
+                            console.log("--- Item in recentItems ---");
+                            console.log("Type of item:", typeof item);
+                            console.log("Keys of item:", Object.keys(item));
+                            Object.keys(item).forEach(key => {
+                                console.log(`  Key: ${key}, Value: ${item[key]}`);
+                            });
+                            const itemDiv = document.createElement('div');
+                            itemDiv.classList.add('autocomplete-item');
+                            itemDiv.textContent = item[textField].nome;
+                            itemDiv.addEventListener('click', function() {
+                                input.value = item[textField].nome;
+                                selectedValue = item[valueField];
+                                input.dataset.selectedId = selectedValue;
+                                list.style.display = 'none';
+                            });
+                            list.appendChild(itemDiv);
+                        });
+                    } else {
+                        list.style.display = 'none';
+                    }
+                }
+            });
+
+
+            input.addEventListener('input', function() {
+                const inputValue = input.value.toLowerCase();
+                list.innerHTML = '';
+                list.style.display = 'none';
+
+                if (!inputValue) {
+                    return;
+                }
+
+                const filteredData = Object.entries(data).filter(([key, item]) => {
+                    const textToFilter = textField ? item[textField].nome?.toLowerCase() : item?.toLowerCase();
+                    return textToFilter?.includes(inputValue);
+                });
+
+                if (filteredData.length > 0) {
+                    list.style.display = 'block';
+                    filteredData.forEach(([key, item]) => {
+                        console.log("Item in filteredData:", item);
+                        const itemDiv = document.createElement('div');
+                        itemDiv.classList.add('autocomplete-item');
+                        itemDiv.textContent = textField ? item[textField].nome : item;
+                        itemDiv.addEventListener('click', function() {
+                            input.value = textField ? item[textField].nome : item;
+                            selectedValue = key;
+                            input.dataset.selectedId = selectedValue;
+                            list.style.display = 'none';
+                        });
+                        list.appendChild(itemDiv);
+                    });
+                }
+            });
+
+             // Close autocomplete list when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!input.contains(event.target) && !list.contains(event.target)) {
+                    list.style.display = 'none';
+                }
+            });
+
+            return {
+                getSelectedValue: () => selectedValue,
+                getInputText: () => input.value
+            };
+        }
+
+
+        // Função para popular dados dos ofícios para autocomplete (MODIFICADA)
+        async function popularOficiosAutocomplete() {
+            const oficiosRef = ref(database, 'oficios');
+            const oficiosSnapshot = await get(oficiosRef);
+            let oficiosData = oficiosSnapshot.val() || {};
+            let oficiosArray = Object.entries(oficiosData).map(([id, oficioObj]) => ({ id: id, nome: oficioObj }));
+            const recentOficios = oficiosArray.slice(-5);
+            console.log("Recent Oficios Data:", recentOficios);
+            return recentOficios;
+        }
+
+
+        if (!personalidadeId) {
+            document.getElementById('personalidade-content').innerHTML =
+                '<div class="error">Personalidade não encontrada</div>';
+        } else {
+            // Fetch personality data and events
+            const personalidadeRef = ref(database, `personalidades/${personalidadeId}`);
+            const eventosRef = ref(database, `eventos`);
+
+            Promise.all([
+                get(personalidadeRef),
+                get(eventosRef)
+            ]).then(([personalidadeSnapshot, eventosSnapshot]) => {
+                if (personalidadeSnapshot.exists()) {
+                    const personalidade = personalidadeSnapshot.val();
+                    const todosEventos = eventosSnapshot.val() || {};
+
+                    const eventosPersonalidade = Object.entries(todosEventos)
+                        .filter(([_, evento]) => evento.itemId === personalidadeId)
+                        .map(([id, evento]) => ({
+                            id,
+                            date: evento.date || '',
+                            name: evento.name || ''
+                        }));
+
+                    const eventosArray = eventosPersonalidade
+                        .filter(evento => evento.date && evento.name)
+                        .sort((a, b) => {
+                            const dateA = new Date(a.date);
+                            const dateB = new Date(b.date);
+                            return dateA - dateB;
+                        });
+
+                    const birthEvent = eventosPersonalidade.find(evento => evento.name === 'Nascimento');
+                    const deathEvent = eventosPersonalidade.find(evento => evento.name === 'Falecimento');
+
+                    const dateRange = birthEvent ?
+                        `${birthEvent.date} - ${deathEvent ? deathEvent.date : 'Presente'}` :
+                        'Sem eventos';
+
+                    const content = `
+                        <div class="personalidade-container">
+                            <div class="personalidade-info">
+                                <img src="${personalidade.imageUrl || ''}" alt="${personalidade.name || 'Personalidade'}" class="personalidade-image">
+                                <div class="personalidade-name">${personalidade.name || 'Nome não disponível'}</div>
+                                <div class="personalidade-description">${personalidade.description || 'Descrição não disponível'}</div>
+                                <div class="personalidade-date-range">${dateRange}</div>
+                                <div class="contemporaneos-panel">
+                                    <div id="filtros-contemporaneos" style="display: none; flex-direction: column; align-items: stretch; gap: 10px;">
+                                        <div class="autocomplete-container">
+                                            <input type="text" id="oficio-autocomplete" class="contemporaneos-autocomplete-input" placeholder="Filtrar por Ofício">
+                                            <div id="oficio-autocomplete-list" class="autocomplete-list"></div>
+                                        </div>
+                                    </div>
+                                    <a href="#" class="contemporaneos-button">Contemporâneos</a>
+                                    <div class="contemporaneos-list" id="contemporaneosList"></div>
+                                </div>
+                            </div>
+                            <div class="eventos-timeline">
+                                ${eventosArray.map(evento => `
+                                    <div class="evento-item">
+                                        <div class="evento-date">${evento.date}</div>
+                                        <div class="evento-name">${evento.name}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('personalidade-content').innerHTML = content;
+
+                    const oficioAutocompleteInput = document.getElementById('oficio-autocomplete');
+                    const oficioAutocompleteList = document.getElementById('oficio-autocomplete-list');
+                    const contemporaneosList = document.getElementById('contemporaneosList');
+                    const contemporaneosButton = document.querySelector('.contemporaneos-button');
+                    const filtrosContainer = document.getElementById('filtros-contemporaneos');
+
+                    // Setup autocomplete for oficio with real-time search
+                    oficioAutocompleteInput.addEventListener('input', function() {
+                        const searchText = this.value.toLowerCase();
+                        oficioAutocompleteList.innerHTML = '';
+
+                        if (searchText.length > 0) {
+                            const matchingOficios = Object.entries(todosOficios)
+                                .filter(([id, nome]) => nome.toLowerCase().includes(searchText))
+                                .slice(0, 10); // Limit to 10 results
+
+                            if (matchingOficios.length > 0) {
+                                oficioAutocompleteList.style.display = 'block';
+                                matchingOficios.forEach(([id, nome]) => {
+                                    const div = document.createElement('div');
+                                    div.className = 'autocomplete-item';
+                                    div.textContent = nome;
+                                    div.addEventListener('click', function() {
+                                        oficioAutocompleteInput.value = nome;
+                                        oficioAutocompleteInput.dataset.selectedId = id;
+                                        oficioAutocompleteList.style.display = 'none';
+                                        // Trigger contemporaries update
+                                        document.querySelector('.contemporaneos-button').click();
+                                    });
+                                    oficioAutocompleteList.appendChild(div);
+                                });
+                            }
+                        }
+                    });
+
+                    // Close autocomplete list when clicking outside
+                    document.addEventListener('click', function(e) {
+                        if (!oficioAutocompleteInput.contains(e.target) && !oficioAutocompleteList.contains(e.target)) {
+                            oficioAutocompleteList.style.display = 'none';
+                        }
+                    });
+
+                    // Clear selection when input is cleared
+                    oficioAutocompleteInput.addEventListener('change', function() {
+                        if (!this.value) {
+                            this.dataset.selectedId = '';
+                        }
+                    });
+
+
+                    popularOficiosAutocomplete().then(recentOficios => {
+                        const oficioAutocomplete = setupAutocomplete(
+                            'oficio-autocomplete',
+                            'oficio-autocomplete-list',
+                            todosOficios,
+                            'id',
+                            'nome',
+                            popularOficiosAutocomplete
+                        );
+                    });
+
+                    contemporaneosButton.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        contemporaneosList.classList.toggle('active');
+
+                        if (contemporaneosList.classList.contains('active')) {
+                            filtrosContainer.style.display = 'flex';
+                            contemporaneosList.innerHTML = '<div class="loading">Carregando contemporâneos...</div>';
+
+                            if (!Object.keys(todasPersonalidadesCache).length) {
+                                const todasPersonalidadesRef = ref(database, 'personalidades');
+                                const todasPersonalidadesSnapshot = await get(todasPersonalidadesRef);
+                                todasPersonalidadesCache = todasPersonalidadesSnapshot.val() || {};
+                            }
+                            if (!Object.keys(todosEventosCache).length) {
+                                const todosEventosRef = ref(database, 'eventos');
+                                const todosEventosSnapshot = await get(todosEventosRef);
+                                todosEventosCache = todosEventosSnapshot.val() || {};
+                            }
+
+                            const todasPersonalidades = todasPersonalidadesCache;
+                            const todosEventos = todosEventosCache;
+
+                            const currentPersonEvents = Object.values(todosEventos)
+                                .filter(evento => evento.itemId === personalidadeId);
+
+                            const currentBirthEvent = currentPersonEvents
+                                .find(evento => evento.name === 'Nascimento');
+                            const currentDeathEvent = currentPersonEvents
+                                .find(evento => evento.name === 'Falecimento');
+
+                            const currentBirthDate = currentBirthEvent ? parseHistoricalDate(currentBirthEvent.date) : null;
+                            const currentDeathDate = currentDeathEvent ? parseHistoricalDate(currentDeathEvent.date) : new Date();
+
+
+                            const oficioFiltrarId = oficioAutocompleteInput.dataset.selectedId;
+                            console.log("Oficio Filter ID:", oficioFiltrarId);
+
+                            let contemporaneos = [];
+
+                            for (const [id, pessoa] of Object.entries(todasPersonalidades)) {
+                                if (id === personalidadeId) continue;
+
+                                let oficioCorresponde = true;
+                                if (oficioFiltrarId && oficioFiltrarId !== "") {
+                                    const pessoaOficioId = pessoa.oficioId;
+                                    oficioCorresponde = pessoaOficioId === oficioFiltrarId;
+                                }
+                                if (!oficioCorresponde) continue;
+
+                                const pessoaEvents = Object.values(todosEventos)
+                                    .filter(evento => evento.itemId === id);
+
+                                const birthEvent = pessoaEvents
+                                    .find(evento => evento.name === 'Nascimento');
+                                const deathEvent = pessoaEvents
+                                    .find(evento => evento.name === 'Falecimento');
+
+                                if (!birthEvent) continue;
+
+                                const birthDate = parseHistoricalDate(birthEvent.date);
+                                const deathDate = deathEvent ? parseHistoricalDate(deathEvent.date) : new Date();
+
+                                const overlap = datesOverlap(currentBirthDate, currentDeathDate, birthDate, deathDate);
+
+                                if (overlap) {
+                                    contemporaneos.push({
+                                        id,
+                                        name: pessoa.name,
+                                        description: pessoa.description,
+                                        birthDate: birthEvent.date,
+                                        deathDate: deathEvent ? deathEvent.date : 'Presente'
+                                    });
+                                }
+                            }
+
+                            contemporaneos.sort((a, b) => {
+                                const dateA = parseHistoricalDate(a.birthDate);
+                                const dateB = parseHistoricalDate(b.birthDate);
+                                return dateA.getTime() - dateB.getTime();
+                            });
+
+                            const isFilterActive = oficioAutocompleteInput.dataset.selectedId;
+                            let contemporaneosToShow = contemporaneos;
+
+                            if (!isFilterActive) {
+                                contemporaneosToShow = contemporaneos.slice(0, 10);
+                            }
+
+
+                            contemporaneosList.innerHTML = contemporaneosToShow
+                                .map(pessoa => `
+                                    <a href="personalidade.html?id=${pessoa.id}" class="contemporaneo-item">
+                                        <div class="contemporaneo-name">${pessoa.name}</div>
+                                        <div class="contemporaneo-description">${pessoa.description || 'Sem descrição disponível'}</div>
+                                        <div class="contemporaneo-dates">${pessoa.birthDate} - ${pessoa.deathDate}</div>
+                                    </a>
+                                `)
+                                .join('') || '<div class="error">Nenhum contemporâneo encontrado</div>';
+                        } else {
+                            filtrosContainer.style.display = 'none';
+                            contemporaneosList.innerHTML = '';
+                        }
+                    });
+
+
+                } else {
+                    document.getElementById('personalidade-content').innerHTML =
+                        '<div class="error">Personalidade não encontrada</div>';
+                }
+            }).catch((error) => {
+                console.error(error);
+                document.getElementById('personalidade-content').innerHTML =
+                    '<div class="error">Erro ao carregar dados</div>';
+            });
+        }
+
+        // --- Funções auxiliares (parseHistoricalDate e datesOverlap) ---
+        function parseHistoricalDate(dateStr) {
+            if (!dateStr) return null;
+            dateStr = dateStr.replace(/cerca de|aproximadamente|c\./gi, '').trim();
+            const isBC = dateStr.toLowerCase().includes('a.c.') || dateStr.toLowerCase().includes('ac');
+            dateStr = dateStr.replace(/[aA]\.[cC]\.|[aA][cC]|[dD]\.[cC]\.|[dD][cC]/g, '').trim();
+
+            let date = null;
+            const yearMonthDayMatchISO = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (yearMonthDayMatchISO) {
+                const year = parseInt(yearMonthDayMatchISO[1], 10);
+                const month = parseInt(yearMonthDayMatchISO[2], 10) - 1;
+                const day = parseInt(yearMonthDayMatchISO[3], 10);
+                date = new Date(year, month, day);
+            }
+
+            if (date && !isNaN(date.getTime())) {
+                return date;
+            }
+
+            const dayMonthNegYearMatch = dateStr.match(/^(\d{2})-(\d{2})--(\d{4})$/);
+            if (dayMonthNegYearMatch) {
+                const day = parseInt(dayMonthNegYearMatch[1], 10);
+                const month = parseInt(dayMonthNegYearMatch[2], 10) - 1;
+                const year = parseInt(dayMonthNegYearMatch[3], 10) * -1;
+                date = new Date(year, month, day);
+            }
+
+            if (!date || isNaN(date.getTime())) {
+                const dayMonthYearMatch = dateStr.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+                if (dayMonthYearMatch) {
+                    const day = parseInt(dayMonthYearMatch[1], 10);
+                    const month = parseInt(dayMonthYearMatch[2], 10) - 1;
+                    const year = parseInt(dayMonthYearMatch[3], 10);
+                    date = new Date(year, month, day);
+                }
+            }
+
+
+            if (!date || isNaN(date.getTime())) {
+                const yearMonthDayMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                if (yearMonthDayMatch) {
+                    date = new Date(parseInt(yearMonthDayMatch[1]), parseInt(yearMonthDayMatch[2]) - 1, parseInt(yearMonthDayMatch[3]));
+                } else {
+                    const yearMatch = dateStr.match(/^(\d{4})$/);
+                    if (yearMatch) {
+                        date = new Date(parseInt(yearMatch[1]), 0, 1);
+                    }
+                }
+            }
+
+
+            if (!date || isNaN(date.getTime())) {
+                return null;
+            }
+
+            if (isBC) {
+                date.setFullYear(-date.getFullYear());
+            }
+            return date;
+        }
+
+        function datesOverlap(start1, end1, start2, end2) {
+            let s1 = start1 ? start1.getTime() : null;
+            let e1 = end1 ? end1.getTime() : new Date().getTime();
+            let s2 = start2 ? start2.getTime() : null;
+            let e2 = end2 ? end2.getTime() : new Date().getTime();
+
+            const futureDeathDate = new Date(3000, 0, 1).getTime();
+
+            if (e1 > new Date().getTime()) {
+                e1 = futureDeathDate;
+            }
+            if (e2 > new Date().getTime()) {
+                e2 = futureDeathDate;
+            }
+
+            if (s1 === null && s2 === null) {
+                return false;
+            }
+            if (s1 === null) {
+                return s2 <= e1;
+            }
+            if (s2 === null) {
+                return s1 <= e2;
+            }
+
+            return s1 <= e2 && s2 <= e1;
+        }
+
+    </script>
+</body>
+</html>

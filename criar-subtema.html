@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar subTema - CRONO LOGIAS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="index.html">CRONO LOGIAS</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="neste-dia.html" class="nav-item">NESTE DIA</a>
+                <a href="top-mundial.html" class="nav-item">TOP MUNDIAL</a>
+                <a href="por-tema.html" class="nav-item">POR TEMA</a>
+                <a href="por-ano.html" class="nav-item">POR ANO</a>
+                <a href="personalidades.html" class="nav-item">PERSONALIDADES</a>
+                <a href="criar.html" class="nav-item">CRIAR</a>
+            </nav>
+        </div>
+        <main class="main-content">
+            <div class="submenu">
+                <a href="criar-oficio.html" class="submenu-button">Criar Novo Ofício</a>
+                <a href="criar-tema.html" class="submenu-button">Criar Tema</a>
+                <a href="criar-subtema.html" class="submenu-button">Criar subTema</a>
+                <a href="criar-evento.html" class="submenu-button">Criar Evento</a>
+                <a href="criar-acontecimento.html" class="submenu-button">Criar Acontecimento</a>
+                <a href="criar-personalidade.html" class="submenu-button">Criar Personalidade</a>
+            </div>
+            <h1>Criar Novo SubTema</h1>
+            <form id="subThemeForm" class="create-form">
+                <div class="form-group">
+                    <label for="themeSearch">Pesquisar Tema:</label>
+                    <select id="themeSelect" name="themeSelect" required>
+                        <option value="">Selecione um tema</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subThemeName">Nome do Subtema:</label>
+                    <input type="text" id="subThemeName" name="subThemeName" required>
+                </div>
+                <div class="form-group">
+                    <label for="subThemeImage">Imagem do Subtema:</label>
+                    <input type="url" id="subThemeImage" name="subThemeImage" required>
+                </div>
+                <button type="submit" class="submit-button">Create Subtheme</button>
+            </form>
+            <div id="message" class="message"></div>
+        </main>
+    </div>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, push, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebasestorage.app",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Load themes when page loads
+        window.addEventListener('DOMContentLoaded', async () => {
+            const temasRef = ref(database, 'temas');
+            const themeSelect = document.getElementById('themeSelect');
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const snapshot = await get(temasRef);
+                if (snapshot.exists()) {
+                    // Clear existing options except the default one
+                    themeSelect.innerHTML = '<option value="">Selecione um tema</option>';
+
+                    // Convert snapshot to array for sorting
+                    const temas = [];
+                    snapshot.forEach((childSnapshot) => {
+                        temas.push({
+                            id: childSnapshot.key,
+                            ...childSnapshot.val()
+                        });
+                    });
+
+                    // Sort themes alphabetically by name
+                    temas.sort((a, b) => a.name.localeCompare(b.name));
+
+                    // Add sorted themes to select
+                    temas.forEach((theme) => {
+                        const option = document.createElement('option');
+                        option.value = theme.id;
+                        option.textContent = theme.name;
+                        themeSelect.appendChild(option);
+                    });
+                } else {
+                    messageDiv.textContent = 'No temas found in the database';
+                    messageDiv.className = 'message error';
+                }
+            } catch (error) {
+                console.error('Error loading temas:', error);
+                messageDiv.textContent = 'Error loading temas: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        });
+
+        document.getElementById('subThemeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const selectedTheme = document.getElementById('themeSelect').value;
+            const subThemeName = document.getElementById('subThemeName').value.trim();
+            const subThemeImage = document.getElementById('subThemeImage').value.trim();
+            const messageDiv = document.getElementById('message');
+
+            if (!selectedTheme) {
+                messageDiv.textContent = 'Please select a theme';
+                messageDiv.className = 'message error';
+                return;
+            }
+
+            try {
+                // Get the theme name from the selected option
+                const selectedThemeOption = document.getElementById('themeSelect').options[document.getElementById('themeSelect').selectedIndex];
+                const themeName = selectedThemeOption.textContent;
+
+                const subTemasRef = ref(database, 'subtemas');
+                await push(subTemasRef, {
+                    themeId: selectedTheme,
+                    themeName: themeName, // Store the theme name
+                    name: subThemeName,
+                    imageUrl: subThemeImage
+                });
+
+                messageDiv.textContent = 'Subtheme created successfully!';
+                messageDiv.className = 'message success';
+                document.getElementById('subThemeForm').reset();
+            } catch (error) {
+                messageDiv.textContent = 'Error creating subtheme: ' + error.message;
+                messageDiv.className = 'message error';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Por Ano - CRONO LOGIAS</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 16px;
+        }
+
+        .card-chips {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.85em;
+            font-weight: 500;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .card-description {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-date {
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .year-filter {
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            margin: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .year-filter input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 120px;
+        }
+
+        .year-filter button {
+            padding: 8px 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .year-filter button:hover {
+            background: #1976D2;
+        }
+
+        .era-select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .year-filter input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .year-filter button {
+            padding: 8px 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .year-filter button:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <a href="index.html">CRONO LOGIAS</a>
+            </div>
+            <nav class="nav-menu">
+                <a href="neste-dia.html" class="nav-item">NESTE DIA</a>
+                <a href="top-mundial.html" class="nav-item">TOP MUNDIAL</a>
+                <a href="por-tema.html" class="nav-item">POR TEMA</a>
+                <a href="por-ano.html" class="nav-item">POR ANO</a>
+                <a href="personalidades.html" class="nav-item">PERSONALIDADES</a>
+                <a href="a-linha.html" class="nav-item">A LINHA</a>
+                <a href="criar.html" class="nav-item">CRIAR</a>
+            </nav>
+        </div>
+        <main class="main-content">
+            <div class="year-filter">
+                <div class="filter-group">
+                    <input type="number" id="yearFilter" placeholder="Filtrar por ano...">
+                    <select id="yearEra" class="era-select">
+                        <option value="CE">d.C.</option>
+                        <option value="BCE">a.C.</option>
+                    </select>
+                    <button onclick="filterByYear()">Filtrar por Ano</button>
+                </div>
+                <div class="filter-group">
+                    <input type="number" id="periodFilter" placeholder="Filtrar por período...">
+                    <select id="periodEra" class="era-select">
+                        <option value="CE">d.C.</option>
+                        <option value="BCE">a.C.</option>
+                    </select>
+                    <button onclick="filterByPeriod()">Filtrar por Período</button>
+                </div>
+            </div>
+            <div class="content-grid" id="timelineGrid">
+                <h2 class="section-title">Linha do Tempo</h2>
+                <!-- Timeline cards will be inserted here -->
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, query, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebasestorage.app",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        function getRandomColor(seed) {
+            let hash = 0;
+            for (let i = 0; i < seed.length; i++) {
+                hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const hue = Math.abs(hash % 360);
+            return `hsl(${hue}, 70%, 35%)`;
+        }
+
+        let timelineItems = [];
+
+        async function loadTimelineData() {
+            timelineItems = [];
+
+            const personalidadesRef = ref(database, 'personalidades');
+            const acontecimentosRef = ref(database, 'acontecimentos');
+            const eventosRef = ref(database, 'eventos');
+
+            const [personalidadesSnapshot, acontecimentosSnapshot, eventosSnapshot] = await Promise.all([
+                get(query(personalidadesRef)),
+                get(query(acontecimentosRef)),
+                get(query(eventosRef))
+            ]);
+
+            const personalidadesData = personalidadesSnapshot.val() || {};
+            const acontecimentosData = acontecimentosSnapshot.val() || {};
+            const eventosData = eventosSnapshot.val() || {};
+
+            for (const [id, personalidade] of Object.entries(personalidadesData)) {
+                const eventos = Object.values(eventosData).filter(e => e.itemId === id);
+                const nascimentoEvent = eventos.find(e => e.name === 'Nascimento');
+                const falecimentoEvent = eventos.find(e => e.name === 'Falecimento');
+
+                let birthYear = null;
+                let deathYear = null;
+                let birthEra = 'CE';
+                let deathEra = 'CE';
+
+
+                if (nascimentoEvent && nascimentoEvent.date) {
+                    const dateParts = nascimentoEvent.date.split('-');
+                    let yearPart = '';
+                    if (nascimentoEvent.date.includes('--')) {
+                        yearPart = dateParts[3];
+                        birthEra = 'BCE';
+                    } else {
+                        yearPart = dateParts[2];
+                    }
+                    birthYear = yearPart ? parseInt(yearPart.replace('--', ''), 10) : null;
+                }
+                if (falecimentoEvent && falecimentoEvent.date) {
+                    const dateParts = falecimentoEvent.date.split('-');
+                    let yearPart = '';
+                    if (falecimentoEvent.date.includes('--')) {
+                        yearPart = dateParts[3];
+                        deathEra = 'BCE';
+                    } else {
+                        yearPart = dateParts[2];
+                    }
+                    deathYear = yearPart ? parseInt(yearPart.replace('--', ''), 10) : null;
+                }
+
+                if (birthYear !== null) {
+                    timelineItems.push({
+                        type: 'personalidade',
+                        id,
+                        name: personalidade.name,
+                        description: personalidade.description,
+                        imageUrl: personalidade.imageUrl,
+                        year: birthYear,
+                        era: birthEra,
+                        oficioName: personalidade.oficioName,
+                        dateRange: deathYear !== null ? `${birthYear}-${deathYear}` : `${birthYear} - Presente`
+                    });
+                }
+            }
+
+            for (const [id, acontecimento] of Object.entries(acontecimentosData)) {
+                const eventos = Object.values(eventosData).filter(e => e.itemId === id);
+                let earliestYear = null;
+                let latestYear = null;
+                let era = 'CE';
+
+                const eventYears = [];
+
+                eventos.forEach(evento => {
+                    if (evento.date) {
+                        const dateParts = evento.date.split('-');
+                        let yearPart = '';
+                        let year = null;
+                        if (evento.date.includes('--')) {
+                            yearPart = dateParts[3];
+                            era = 'BCE';
+                        } else {
+                            yearPart = dateParts[2];
+                        }
+                        year = yearPart ? parseInt(yearPart.replace('--', ''), 10) : null;
+                        if (year !== null) {
+                            eventYears.push(year);
+                        }
+                    }
+                });
+
+                if (eventYears.length > 0) {
+                    earliestYear = Math.min(...eventYears);
+                    latestYear = Math.max(...eventYears);
+
+                    timelineItems.push({
+                        type: 'acontecimento',
+                        id,
+                        name: acontecimento.name,
+                        description: acontecimento.description,
+                        imageUrl: acontecimento.imageUrl,
+                        year: earliestYear,
+                        era: era,
+                        theme: acontecimento.theme,
+                        subtheme: acontecimento.subtheme,
+                        dateRange: earliestYear === latestYear ? `${earliestYear}` : `${earliestYear}-${latestYear}`
+                    });
+                }
+            }
+
+            timelineItems.sort((a, b) => a.year - b.year);
+
+            const grid = document.getElementById('timelineGrid');
+            grid.innerHTML = '<h2 class="section-title">Linha do Tempo</h2>';
+
+            timelineItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                let cardContentHTML = '';
+
+                if (item.type === 'personalidade') {
+                    cardContentHTML = `
+                        <a href="personalidade.html?id=${item.id}" style="text-decoration: none; color: inherit;">
+                            <img src="${item.imageUrl || 'https://via.placeholder.com/300x200'}" alt="${item.name}" class="card-image">
+                            <div class="card-content">
+                                <div class="card-chips">
+                                    <span class="chip" style="background-color: ${getRandomColor(item.oficioName)}">${item.oficioName}</span>
+                                </div>
+                                <h3 class="card-title">${item.name}</h3>
+                                <p class="card-description">${item.description || 'Sem descrição disponível'}</p>
+                                <div class="card-date">${item.dateRange}</div>
+                            </div>
+                        </a>
+                    `;
+                } else if (item.type === 'acontecimento') {
+                    cardContentHTML = `
+                        <a href="acontecimento.html?id=${item.id}" style="text-decoration: none; color: inherit;">
+                            <img src="${item.imageUrl || 'https://via.placeholder.com/300x200'}" alt="${item.name}" class="card-image">
+                            <div class="card-content">
+                                <div class="card-chips">
+                                    <span class="chip" style="background-color: ${getRandomColor(item.theme)}">${item.theme}</span>
+                                    <span class="chip" style="background-color: ${getRandomColor(item.subtheme)}">${item.subtheme}</span>
+                                </div>
+                                <h3 class="card-title">${item.name}</h3>
+                                <p class="card-description">${item.description || 'Sem descrição disponível'}</p>
+                                <div class="card-date">${item.dateRange}</div>
+                            </div>
+                        </a>
+                    `;
+                }
+                card.innerHTML = cardContentHTML;
+                grid.appendChild(card);
+            });
+        }
+
+        window.filterByYear = function() {
+            const year = parseInt(document.getElementById('yearFilter').value);
+            const era = document.getElementById('yearEra').value;
+            const cards = document.querySelectorAll('.card');
+
+            if (!year) {
+                cards.forEach(card => card.style.display = '');
+                return;
+            }
+
+            const searchYear = era === 'BCE' ? -year : year;
+
+            cards.forEach(card => {
+                const cardDateElement = card.querySelector('.card-date');
+                const dateText = cardDateElement ? cardDateElement.textContent : '';
+                const cardIndex = Array.from(cards).indexOf(card); 
+                const timelineItem = timelineItems[cardIndex]; 
+                const itemEra = timelineItem.era; 
+
+
+                const dates = dateText.split('-').map(d => d.trim());
+                let startYear = parseInt(dates[0]);
+                if (itemEra === 'BCE') { 
+                    startYear = -startYear;
+                }
+                card.style.display = startYear === searchYear ? '' : 'none';
+            });
+        };
+
+        window.filterByPeriod = function() {
+            const period = parseInt(document.getElementById('periodFilter').value);
+            const era = document.getElementById('periodEra').value;
+            const cards = document.querySelectorAll('.card');
+
+            if (!period) {
+                cards.forEach(card => card.style.display = '');
+                return;
+            }
+
+            const searchPeriodStart = era === 'BCE' ? -period : period;
+            const searchPeriodEnd = searchPeriodStart; 
+
+            cards.forEach(card => {
+                const cardDateElement = card.querySelector('.card-date');
+                const dateText = cardDateElement ? cardDateElement.textContent : '';
+                const dates = dateText.split('-').map(d => d.trim());
+
+                let startYearText = dates[0];
+                let endYearText = dates[1];
+
+                let startYear = parseInt(startYearText.replace('a.C.', '').replace('d.C.', ''));
+                let endYear = endYearText === 'Presente' ? new Date().getFullYear() : parseInt(endYearText.replace('a.C.', '').replace('d.C.', ''));
+
+                if (startYearText.includes('a.C.')) {
+                    startYear = -startYear;
+                }
+                if (endYearText && endYearText.includes('a.C.')) {
+                    endYear = -endYear;
+                }
+
+                const isOverlapping = (
+                    (searchPeriodStart >= startYear && searchPeriodStart <= endYear) || 
+                    (searchPeriodEnd >= startYear && searchPeriodEnd <= endYear) ||     
+                    (startYear >= searchPeriodStart && startYear <= searchPeriodEnd) ||     
+                    (endYear >= searchPeriodStart && endYear <= searchPeriodEnd)         
+                );
+
+
+                card.style.display = isOverlapping ? '' : 'none';
+            });
+        };
+
+        loadTimelineData();
+    </script>
+</body>
+</html>
