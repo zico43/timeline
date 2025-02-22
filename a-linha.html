@@ -136,6 +136,7 @@
             display: flex; /* Adicionado para layout flexível */
             flex-direction: column; /* Alinha os itens verticalmente */
             align-items: center; /* Centraliza horizontalmente o conteúdo do card */
+            margin-bottom: 0px; /* Garante que não há margem inferior extra */
         }
         .selected-item-card:hover {
             transform: translateY(-2px);
@@ -172,113 +173,44 @@
             padding-left: 0; /* Removido para o texto começar na esquerda */
             margin-top: 8px; /* Reduzi a margem superior */
         }
-        .selected-item-card .close-button {
+        .selected-cards-container {
+            display: none; /* Este container geral não é mais usado para exibição */
+        }
+
+        .selected-card-for-search {
+            margin-top: 15px;      /* Adiciona um espaço vertical acima do card */
+            margin-left: 15px;     /* Adiciona espaço à esquerda do card */
+            margin-right: 15px;    /* Adiciona espaço à direita do card */
+            width: auto;          /* Permite que a largura se ajuste ao conteúdo + margens */
+            display: block;        /* Garante que as margens funcionam corretamente */
+        }
+
+        .card-close-button {
             position: absolute;
-            top: 12px; /* Ajustei a posição do botão close */
-            right: 12px; /* Ajustei a posição do botão close */
-            width: 24px; /* Reduzi o tamanho do botão close */
-            height: 24px; /* Reduzi o tamanho do botão close */
-            border-radius: 50%;
-            background: #f8f9fa;
-            border: 1px solid rgba(0,0,0,0.08);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px; /* Reduzi o tamanho da fonte do botão close */
-            color: #4a5568;
-            transition: all 0.2s ease;
-            z-index: 2;
+            top: 8px;          /* Ajuste a posição vertical conforme necessário */
+            right: 8px;         /* Ajuste a posição horizontal conforme necessário */
+            background: none;   /* Fundo transparente */
+            border: none;       /* Sem borda */
+            font-size: 16px;    /* Tamanho da fonte do "x" */
+            color: #888;        /* Cor do "x" */
+            cursor: pointer;    /* Mudar o cursor ao passar por cima */
+            padding: 0;         /* Remover padding padrão do botão */
+            line-height: 1;     /* Ajustar line-height para centralizar verticalmente */
+            width: 20px;        /* Largura do botão (ajuste conforme necessário) */
+            height: 20px;       /* Altura do botão (ajuste conforme necessário) */
+            text-align: center; /* Centralizar o "x" horizontalmente */
+            border-radius: 50%; /* Tornar o botão circular (opcional) */
+            opacity: 0.7;       /* Transparência inicial (opcional) */
+            transition: opacity 0.2s ease; /* Transição suave na opacidade */
         }
-        .selected-item-card .close-button:hover {
-            background: #e9ecef;
-            color: #212529;
+
+        .card-close-button:hover {
+            opacity: 1;       /* Opacidade total no hover */
+            color: #333;        /* Cor mais escura no hover */
+            background-color: #eee; /* Cor de fundo no hover (opcional) */
         }
-        .search-container:nth-child(1) .selected-item-card .close-button:hover {
-            background: #ffcdd2;
-        }
-        .search-container:nth-child(2) .selected-item-card .close-button:hover {
-            background: #c8e6c9;
-        }
-        .search-container:nth-child(3) .selected-item-card .close-button:hover {
-            background: #bbdefb;
-        }
-        .search-container:nth-child(4) .selected-item-card .close-button:hover {
-            background: #e1bee7;
-        }
-        .selected-item-card .card-title {
-            font-weight: 700;
-            font-size: 1.1em; /* Reduzi o tamanho da fonte do título */
-            color: #1a1a1a;
-            margin-bottom: 4px; /* Reduzi a margem inferior */
-            line-height: 1.2; /* Ajustei a line-height */
-            text-align: center; /* Centraliza o título */
-        }
-        .selected-item-card .card-type {
-            font-size: 0.8em; /* Reduzi o tamanho da fonte do tipo */
-            padding: 4px 8px; /* Reduzi o padding do tipo */
-            border-radius: 20px;
-            background: #f5f7fa;
-            color: #4a5568;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            text-align: center; /* Centraliza o tipo */
-            margin-bottom: 8px; /* Reduzi a margem inferior */
-        }
-        .selected-item-card .card-image-container {
-            width: 60px; /* Reduzi o tamanho da imagem */
-            height: 60px; /* Reduzi o tamanho da imagem */
-            overflow: hidden;
-            border-radius: 12px;
-            margin: 0 auto 10px; /* Centraliza e adiciona margem inferior */
-            position: relative;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .selected-item-card .card-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-        }
-        .selected-item-card .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 8px; /* Reduzi a margem inferior */
-            position: relative;
-            padding-left: 0px; /* Removido */
-            min-height: auto; /* Ajusta a altura automaticamente */
-            flex-direction: column; /* Alinha os elementos do header verticalmente */
-            align-items: center; /* Centraliza os elementos do header */
-        }
-        .selected-item-card .card-dates {
-            font-size: 0.9em; /* Reduzi um pouco o tamanho da fonte */
-            color: #718096;
-            margin: 8px 0; /* Reduzi as margens */
-            padding-left: 0px; /* Removido */
-            text-align: center; /* Centraliza as datas */
-        }
-        .selected-item-card .card-description {
-            font-size: 0.9em; /* Reduzi um pouco o tamanho da fonte */
-            line-height: 1.4; /* Ajustei a line-height para um texto mais compacto */
-            color: #4a5568;
-            padding-left: 0px; /* Removido */
-            margin-top: 8px; /* Reduzi a margem superior */
-            text-align: center; /* Centraliza a descrição */
-        }
-        .search-container:nth-child(1) .selected-item-card {
-            border-left: 4px solid #ef9a9a;
-        }
-        .search-container:nth-child(2) .selected-item-card {
-            border-left: 4px solid #81c784;
-        }
-        .search-container:nth-child(3) .selected-item-card {
-            border-left: 4px solid #64b5f6;
-        }
-        .search-container:nth-child(4) .selected-item-card {
-            border-left: 4px solid #ba68c8;
-        }
+
+
     </style>
 </head>
 <body>
@@ -301,257 +233,271 @@
             <div class="search-container">
                 <input type="text" id="mainSearch1" placeholder="Pesquisar acontecimentos e personalidades..." autocomplete="off">
                 <div id="searchResults1" class="search-results"></div>
+                <div id="selectedCard1" class="selected-card-for-search">
+                    <!-- Card selecionado para a barra de pesquisa 1 será inserido aqui -->
+                </div>
             </div>
             <div class="search-container">
                 <input type="text" id="mainSearch2" placeholder="Pesquisar acontecimentos e personalidades..." autocomplete="off">
                 <div id="searchResults2" class="search-results"></div>
+                <div id="selectedCard2" class="selected-card-for-search">
+                    <!-- Card selecionado para a barra de pesquisa 2 será inserido aqui -->
+                </div>
             </div>
             <div class="search-container">
                 <input type="text" id="mainSearch3" placeholder="Pesquisar acontecimentos e personalidades..." autocomplete="off">
                 <div id="searchResults3" class="search-results"></div>
+                <div id="selectedCard3" class="selected-card-for-search">
+                    <!-- Card selecionado para a barra de pesquisa 3 será inserido aqui -->
+                </div>
             </div>
             <div class="search-container">
                 <input type="text" id="mainSearch4" placeholder="Pesquisar acontecimentos e personalidades..." autocomplete="off">
                 <div id="searchResults4" class="search-results"></div>
+                <div id="selectedCard4" class="selected-card-for-search">
+                    <!-- Card selecionado para a barra de pesquisa 4 será inserido aqui -->
+                </div>
             </div>
 
-
-            <script type="module">
-                import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-                import { getDatabase, ref, get, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-
-                const firebaseConfig = {
-                    apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
-                    authDomain: "cronologias-ce797.firebaseapp.com",
-                    databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
-                    projectId: "cronologias-ce797",
-                    storageBucket: "cronologias-ce797.firebaseapp.com",
-                    messagingSenderId: "417864483809",
-                    appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
-                    measurementId: "G-XQG7DE12YS"
-                };
-
-                const app = initializeApp(firebaseConfig);
-                const database = getDatabase(app);
-
-                let allItems = [];
-                let itemEvents = new Map();
-
-                async function loadData() {
-                    try {
-                        // Load personalidades
-                        const personalidadesRef = ref(database, 'personalidades');
-                        const personalidadesSnapshot = await get(personalidadesRef);
-                        if (personalidadesSnapshot.exists()) {
-                            personalidadesSnapshot.forEach((childSnapshot) => {
-                                allItems.push({
-                                    id: childSnapshot.key,
-                                    type: 'personalidade',
-                                    ...childSnapshot.val()
-                                });
-                            });
-                        }
-
-                        // Load acontecimentos
-                        const acontecimentosRef = ref(database, 'acontecimentos');
-                        const acontecimentosSnapshot = await get(acontecimentosRef);
-                        if (acontecimentosSnapshot.exists()) {
-                            acontecimentosSnapshot.forEach((childSnapshot) => {
-                                allItems.push({
-                                    id: childSnapshot.key,
-                                    type: 'acontecimento',
-                                    ...childSnapshot.val()
-                                });
-                            });
-                        }
-
-                        // Load events for each item
-                        const eventosRef = ref(database, 'eventos');
-                        const eventosSnapshot = await get(eventosRef);
-                        if (eventosSnapshot.exists()) {
-                            eventosSnapshot.forEach((childSnapshot) => {
-                                const event = childSnapshot.val();
-                                if (event.itemId) {
-                                    if (!itemEvents.has(event.itemId)) {
-                                        itemEvents.set(event.itemId, []);
-                                    }
-                                    itemEvents.get(event.itemId).push({
-                                        date: event.date,
-                                        name: event.name
-                                    });
-                                }
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Error loading data:', error);
-                    }
-                }
-
-                function getDateRange(dates) {
-                    if (!dates || dates.length === 0) return '';
-
-                    // For personalities
-                    const birthEvent = dates.find(date => date.name && date.name.toLowerCase().includes('nascimento'));
-                    const deathEvent = dates.find(date => date.name && date.name.toLowerCase().includes('falecimento'));
-
-                    if (birthEvent) {
-                        // For personalities, show birth-death years
-                        const birthYear = birthEvent.date.split('-').pop();
-                        const deathYear = deathEvent ? deathEvent.date.split('-').pop() : 'Presente';
-                        return `(${birthYear} - ${deathYear})`;
-                    } else {
-                        // For historical events, show earliest-latest years
-                        const sortedDates = dates.sort((a, b) => a.date.localeCompare(b.date));
-                        const earliestYear = sortedDates[0].date.split('-').pop();
-                        const latestYear = sortedDates[sortedDates.length - 1].date.split('-').pop();
-                        return earliestYear === latestYear ? `(${earliestYear})` : `(${earliestYear} - ${latestYear})`;
-                    }
-                }
-
-                // Initialize search functionality for all search bars
-                const searchInputs = [
-                    document.getElementById('mainSearch1'),
-                    document.getElementById('mainSearch2'),
-                    document.getElementById('mainSearch3'),
-                    document.getElementById('mainSearch4')
-                ];
-                const searchResults = [
-                    document.getElementById('searchResults1'),
-                    document.getElementById('searchResults2'),
-                    document.getElementById('searchResults3'),
-                    document.getElementById('searchResults4')
-                ];
-
-                searchInputs.forEach((searchInput, index) => {
-                    searchInput.addEventListener('input', () => {
-                        const searchText = searchInput.value.toLowerCase();
-                        if (searchText.length < 1) {
-                            searchResults[index].style.display = 'none';
-                            return;
-                        }
-
-                        const filteredItems = allItems.filter(item =>
-                            item.name && item.name.toLowerCase().includes(searchText)
-                        );
-
-                        searchResults[index].innerHTML = '';
-                        if (filteredItems.length > 0) {
-                            filteredItems.forEach(item => {
-                                const div = document.createElement('div');
-                                div.className = 'search-result-item';
-
-                                const info = document.createElement('div');
-                                info.className = 'result-info';
-
-                                const name = document.createElement('div');
-                                name.className = 'result-name';
-                                name.textContent = item.name;
-
-                                const type = document.createElement('span');
-                                type.className = 'result-type';
-                                type.textContent = item.type === 'personalidade' ? 'Personalidade' : 'Acontecimento';
-
-                                const dateRange = getDateRange(itemEvents.get(item.id));
-                                if (dateRange) {
-                                    const dateSpan = document.createElement('span');
-                                    dateSpan.className = 'result-date';
-                                    dateSpan.textContent = ' ' + dateRange;
-                                    name.appendChild(dateSpan);
-                                }
-
-                                info.appendChild(name);
-                                info.appendChild(type);
-                                div.appendChild(info);
-
-                                div.addEventListener('click', () => {
-                                    const container = searchInput.closest('.search-container');
-                                    
-                                    // Remove any existing card
-                                    const existingCard = container.querySelector('.selected-item-card');
-                                    if (existingCard) {
-                                        existingCard.remove();
-                                    }
-                                    
-                                    // Create new card
-                                    const card = document.createElement('div');
-                                    card.className = 'selected-item-card';
-
-                                    // Add image container
-                                    const imageContainer = document.createElement('div');
-                                    imageContainer.className = 'card-image-container';
-                                    const image = document.createElement('img');
-                                    image.src = item.imageUrl || 'https://via.placeholder.com/300x200';
-                                    image.alt = item.name;
-                                    image.className = 'card-image';
-                                    imageContainer.appendChild(image);
-                                    card.appendChild(imageContainer);
-                                    
-                                    const cardHeader = document.createElement('div');
-                                    cardHeader.className = 'card-header';
-                                    
-                                    const closeButton = document.createElement('button');
-                                    closeButton.className = 'close-button';
-                                    closeButton.innerHTML = '×';
-                                    closeButton.addEventListener('click', (e) => {
-                                        e.stopPropagation();
-                                        card.remove();
-                                    });
-                                    
-                                    const cardTitle = document.createElement('div');
-                                    cardTitle.className = 'card-title';
-                                    cardTitle.textContent = item.name;
-                                    
-                                    const cardType = document.createElement('div');
-                                    cardType.className = 'card-type';
-                                    cardType.textContent = item.type === 'personalidade' ? 'Personalidade' : 'Acontecimento';
-                                    
-                                    cardHeader.appendChild(cardTitle);
-                                    cardHeader.appendChild(cardType);
-                                    
-                                    const dates = itemEvents.get(item.id);
-                                    if (dates) {
-                                        const cardDates = document.createElement('div');
-                                        cardDates.className = 'card-dates';
-                                        cardDates.textContent = getDateRange(dates);
-                                        card.appendChild(cardDates);
-                                    }
-                                    
-                                    if (item.description) {
-                                        const cardDescription = document.createElement('div');
-                                        cardDescription.className = 'card-description';
-                                        cardDescription.textContent = item.description;
-                                        card.appendChild(cardDescription);
-                                    }
-                                    
-                                    card.insertBefore(cardHeader, card.firstChild);
-                                    container.appendChild(card);
-                                    
-                                    // Hide search results
-                                    searchResults[index].style.display = 'none';
-                                    searchInput.value = '';
-                                });
-
-                                searchResults[index].appendChild(div);
-                            });
-                            searchResults[index].style.display = 'block';
-                        } else {
-                            searchResults[index].style.display = 'none';
-                        }
-                    });
-                });
-
-                document.addEventListener('click', (e) => {
-                    searchInputs.forEach((searchInput, index) => {
-                        if (!searchInput.contains(e.target) && !searchResults[index].contains(e.target)) {
-                            searchResults[index].style.display = 'none';
-                        }
-                    });
-                });
-
-                // Load data when page loads
-                await loadData();
-            </script>
+            <div id="selected-cards-container" class="selected-cards-container" style="display: none;">
+                <!-- Este container geral não é mais usado para exibição -->
+            </div>
         </main>
     </div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, get, query, orderByChild } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBr8Z9M5euua_HDKJurjpYwCykDYabVMb8",
+            authDomain: "cronologias-ce797.firebaseapp.com",
+            databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
+            projectId: "cronologias-ce797",
+            storageBucket: "cronologias-ce797.firebaseapp.com",
+            messagingSenderId: "417864483809",
+            appId: "1:417864483809:web:c06cc69fec7891cb7588a0",
+            measurementId: "G-XQG7DE12YS"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let allItems = [];
+        let itemEvents = new Map();
+
+        async function loadData() {
+            try {
+                // Load personalidades
+                const personalidadesRef = ref(database, 'personalidades');
+                const personalidadesSnapshot = await get(personalidadesRef);
+                if (personalidadesSnapshot.exists()) {
+                    personalidadesSnapshot.forEach((childSnapshot) => {
+                        allItems.push({
+                            id: childSnapshot.key,
+                            type: 'personalidade',
+                            ...childSnapshot.val()
+                        });
+                    });
+                }
+
+                // Load acontecimentos
+                const acontecimentosRef = ref(database, 'acontecimentos');
+                const acontecimentosSnapshot = await get(acontecimentosRef);
+                if (acontecimentosSnapshot.exists()) {
+                    acontecimentosSnapshot.forEach((childSnapshot) => {
+                        allItems.push({
+                            id: childSnapshot.key,
+                            type: 'acontecimento',
+                            ...childSnapshot.val()
+                        });
+                    });
+                }
+
+                // Load events for each item
+                const eventosRef = ref(database, 'eventos');
+                const eventosSnapshot = await get(eventosRef);
+                if (eventosSnapshot.exists()) {
+                    eventosSnapshot.forEach((childSnapshot) => {
+                        const event = childSnapshot.val();
+                        if (event.itemId) {
+                            if (!itemEvents.has(event.itemId)) {
+                                itemEvents.set(event.itemId, []);
+                            }
+                            itemEvents.get(event.itemId).push({
+                                date: event.date,
+                                name: event.name
+                            });
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function getDateRange(dates) {
+            if (!dates || dates.length === 0) return '';
+
+            // For personalities
+            const birthEvent = dates.find(date => date.name && date.name.toLowerCase().includes('nascimento'));
+            const deathEvent = dates.find(date => date.name && date.name.toLowerCase().includes('falecimento'));
+
+            if (birthEvent) {
+                // For personalities, show birth-death years
+                const birthYear = birthEvent.date.split('-').pop();
+                const deathYear = deathEvent ? deathEvent.date.split('-').pop() : 'Presente';
+                return `(${birthYear} - ${deathYear})`;
+            } else {
+                // For historical events, show earliest-latest years
+                const sortedDates = dates.sort((a, b) => a.date.localeCompare(b.date));
+                const earliestYear = sortedDates[0].date.split('-').pop();
+                const latestYear = sortedDates[sortedDates.length - 1].date.split('-').pop();
+                return earliestYear === latestYear ? `(${earliestYear})` : `(${earliestYear} - ${latestYear})`;
+            }
+        }
+
+        // Initialize search functionality for all search bars
+        const searchInputs = [
+            document.getElementById('mainSearch1'),
+            document.getElementById('mainSearch2'),
+            document.getElementById('mainSearch3'),
+            document.getElementById('mainSearch4')
+        ];
+        const searchResults = [
+            document.getElementById('searchResults1'),
+            document.getElementById('searchResults2'),
+            document.getElementById('searchResults3'),
+            document.getElementById('searchResults4')
+        ];
+
+        searchInputs.forEach((searchInput, index) => {
+            searchInput.addEventListener('input', () => {
+                const searchText = searchInput.value.toLowerCase();
+                if (searchText.length < 1) {
+                    searchResults[index].style.display = 'none';
+                    return;
+                }
+
+                const filteredItems = allItems.filter(item =>
+                    item.name && item.name.toLowerCase().includes(searchText)
+                );
+
+                searchResults[index].innerHTML = '';
+                if (filteredItems.length > 0) {
+                    filteredItems.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'search-result-item';
+
+                        const info = document.createElement('div');
+                        info.className = 'result-info';
+
+                        const name = document.createElement('div');
+                        name.className = 'result-name';
+                        name.textContent = item.name;
+
+                        const type = document.createElement('span');
+                        type.className = 'result-type';
+                        type.textContent = item.type === 'personalidade' ? 'Personalidade' : 'Acontecimento';
+
+                        const dateRange = getDateRange(itemEvents.get(item.id));
+                        if (dateRange) {
+                            const dateSpan = document.createElement('span');
+                            dateSpan.className = 'result-date';
+                            dateSpan.textContent = ' ' + dateRange;
+                            name.appendChild(dateSpan);
+                        }
+
+                        info.appendChild(name);
+                        info.appendChild(type);
+                        div.appendChild(info);
+
+                        div.addEventListener('click', () => {
+                            const searchContainer = searchInput.closest('.search-container'); // Get the parent search container
+                            const selectedCardContainer = searchContainer.querySelector('.selected-card-for-search'); // Find the card container within it
+                            selectedCardContainer.innerHTML = ''; // Clear any existing card
+
+                            // Create new card
+                            const card = document.createElement('div');
+                            card.className = 'selected-item-card';
+
+                            // *** NEW: Create close button ***
+                            const closeButton = document.createElement('button');
+                            closeButton.className = 'card-close-button'; // Add a class for styling
+                            closeButton.innerHTML = '×'; // "x" character
+                            closeButton.addEventListener('click', (e) => {
+                                e.stopPropagation(); // Prevent event bubbling
+                                card.remove(); // Remove the card from the DOM
+                            });
+                            card.appendChild(closeButton); // Add close button to the card
+                            // *** END NEW: Create close button ***
+
+                            // Add image container
+                            const imageContainer = document.createElement('div');
+                            imageContainer.className = 'card-image-container';
+                            const image = document.createElement('img');
+                            image.src = item.imageUrl || 'https://via.placeholder.com/300x200';
+                            image.alt = item.name;
+                            image.className = 'card-image';
+                            imageContainer.appendChild(image);
+                            card.appendChild(imageContainer);
+
+                            const cardHeader = document.createElement('div');
+                            cardHeader.className = 'card-header';
+
+                            const cardTitle = document.createElement('div');
+                            cardTitle.className = 'card-title';
+                            cardTitle.textContent = item.name;
+
+                            const cardType = document.createElement('div');
+                            cardType.className = 'card-type';
+                            cardType.textContent = item.type === 'personalidade' ? 'Personalidade' : 'Acontecimento';
+
+                            cardHeader.appendChild(cardTitle);
+                            cardHeader.appendChild(cardType);
+
+                            const dates = itemEvents.get(item.id);
+                            if (dates) {
+                                const cardDates = document.createElement('div');
+                                cardDates.className = 'card-dates';
+                                cardDates.textContent = getDateRange(dates);
+                                card.appendChild(cardDates);
+                            }
+
+                            if (item.description) {
+                                const cardDescription = document.createElement('div');
+                                cardDescription.className = 'card-description';
+                                cardDescription.textContent = item.description;
+                                card.appendChild(cardDescription);
+                            }
+
+                            card.insertBefore(cardHeader, card.firstChild);
+                            selectedCardContainer.appendChild(card); // Append to the specific container
+
+                            // Hide search results
+                            searchResults[index].style.display = 'none';
+                            searchInput.value = '';
+                        });
+
+                        searchResults[index].appendChild(div);
+                    });
+                    searchResults[index].style.display = 'block';
+                } else {
+                    searchResults[index].style.display = 'none';
+                }
+            });
+        });
+
+        document.addEventListener('click', (e) => {
+            searchInputs.forEach((searchInput, index) => {
+                if (!searchInput.contains(e.target) && !searchResults[index].contains(e.target)) {
+                    searchResults[index].style.display = 'none';
+                }
+            });
+        });
+
+        // Load data when page loads
+        await loadData();
+    </script>
 </body>
 </html>
