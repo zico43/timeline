@@ -780,7 +780,9 @@
                             endYear = currentYear;
                             console.log("datasetEndDate is 'Presente', endYear set to:", endYear);
                         } else {
-                            endYear = parseInt(datasetEndDate);
+                            // Extract year from formatted date string (DD-MM-YYYY)
+                            const dateParts = datasetEndDate.split('-');
+                            endYear = parseInt(dateParts[dateParts.length - 1]);
                             console.log("Using specific end year:", endYear);
                         }
                     }
