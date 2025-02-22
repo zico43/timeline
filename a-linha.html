@@ -270,7 +270,7 @@
             align-items: center;
             padding: 25px;
             z-index: 900;
-        
+
         }
 
         @media screen and (max-width: 768px) {
@@ -281,7 +281,7 @@
                 width: 100%;
                 max-width: 400px;
             }
-            
+
             .timeline-container::after {
                 content: '';
                 position: absolute;
@@ -446,6 +446,26 @@
             font-size: 14px;
             color: #666;
             transform: translateX(50%);
+        }
+
+          .timeline-dashed-line {
+            position: absolute;
+            top: 0;
+            height: 60px; /* Ajuste conforme necessário */
+            border-left: 1px dashed #666;
+            z-index: 0;
+             /*transform: translateY(-30px);*/ /* Move a linha para cima */
+        }
+
+        .timeline-date-label {
+            position: absolute;
+           /* top: -25px;  Posiciona acima da linha do tempo */
+            left: 50%;
+            transform: translateX(-50%) ;
+            font-size: 12px;
+            color: #666;
+            z-index: 1;
+            white-space: nowrap; /* Impede que o texto quebre em várias linhas */
         }
     </style>
 </head>
@@ -687,12 +707,13 @@
             const startDateEl = document.querySelector('.timeline-start-date');
             const endDateEl = document.querySelector('.timeline-end-date');
 
-            // Remove existing overlays
             timeline.querySelectorAll('.timeline-overlay').forEach(overlay => overlay.remove());
+            timeline.querySelectorAll('.timeline-dashed-line').forEach(line => line.remove());  // Remover linhas tracejadas
+            timeline.querySelectorAll('.timeline-date-label').forEach(label => label.remove()); // Remover rótulos
 
             let selectedDates = [];
+            let translateY = -30;
 
-            // Collect dates from all selected cards
             for (let i = 1; i <= 4; i++) {
                 const selectedCard = document.getElementById(`selectedCard${i}`).querySelector('.selected-item-card');
                 if (selectedCard) {
@@ -704,30 +725,64 @@
             }
 
             if (selectedDates.length > 0) {
-                // Find global min and max years
                 const minYear = Math.min(...selectedDates.map(d => d.start));
                 const maxYear = Math.max(...selectedDates.map(d => d.end));
 
-                // Update timeline dates
                 startDateEl.textContent = minYear;
                 endDateEl.textContent = maxYear;
 
-                // Create overlays for each selected date range
                 selectedDates.forEach(date => {
                     const overlay = document.createElement('div');
                     overlay.className = `timeline-overlay timeline-overlay-${date.index}`;
-
-                    // Calculate position and width as percentages
                     const startPercent = ((date.start - minYear) / (maxYear - minYear)) * 100;
                     const endPercent = ((date.end - minYear) / (maxYear - minYear)) * 100;
-                    
                     overlay.style.left = `${startPercent}%`;
                     overlay.style.width = `${endPercent - startPercent}%`;
-                    
                     timeline.appendChild(overlay);
+
+                    // Linha e rótulo para o ano de início
+                    const startLine = document.createElement('div');
+                    startLine.className = 'timeline-dashed-line';
+                    startLine.style.left = `${startPercent}%`;
+
+                    timeline.appendChild(startLine);
+
+
+                    const startLabel = document.createElement('div');
+                    startLabel.className = 'timeline-date-label';
+                    startLabel.textContent = date.start + ' d.C';
+                    startLabel.style.left = `${startPercent}%`;
+                    startLabel.style.transform = `translate(-50%, ${translateY}px)`;
+                    if (translateY > -100){
+                         translateY -= 15;
+                    }
+                    else {
+                        translateY = -30;
+                    }
+                    timeline.appendChild(startLabel);
+
+
+                    // Linha e rótulo para o ano de fim
+                    const endLine = document.createElement('div');
+                    endLine.className = 'timeline-dashed-line';
+                    endLine.style.left = `${endPercent}%`;
+
+                    timeline.appendChild(endLine);
+
+                    const endLabel = document.createElement('div');
+                    endLabel.className = 'timeline-date-label';
+                    endLabel.textContent = date.end+ ' d.C';
+                    endLabel.style.left = `${endPercent}%`;
+                    endLabel.style.transform = `translate(-50%, ${translateY}px)`;
+                    if (translateY > -100){
+                         translateY -= 15;
+                    }
+                    else {
+                        translateY = -30
+                    }
+                    timeline.appendChild(endLabel);
                 });
             } else {
-                // Reset to default range if no items selected
                 startDateEl.textContent = '1850';
                 endDateEl.textContent = '2040';
             }
@@ -737,10 +792,10 @@
             const dates = itemEvents.get(item.id);
             const dateRange = getDateRange(dates);
             const startYear = dates.length > 0 ? parseInt(dates[0].date.split('-').pop()) : null;
-            const endYear = dates.length > 1 ? 
-                (dates[dates.length - 1].date.split('-').pop() === 'Presente' ? 
-                    new Date().getFullYear() : 
-                    parseInt(dates[dates.length - 1].date.split('-').pop())) : 
+            const endYear = dates.length > 1 ?
+                (dates[dates.length - 1].date.split('-').pop() === 'Presente' ?
+                    new Date().getFullYear() :
+                    parseInt(dates[dates.length - 1].date.split('-').pop())) :
                 startYear;
 
             const card = document.createElement('div');
