@@ -304,19 +304,19 @@
         }
         .timeline-event-label {
             position: absolute;
-            top: -800px; /* ALTERADO PARA 30px (VALOR POSITIVO) */
+            top: -32px; /* ALTERADO de -30px para -32px (ou tente -33px) */
             left: 20%;
-            transform: translateX(-50%) rotate(-45deg); /* ADICIONADO rotate(-45deg) */
+            transform: translateX(0%) rotate(-45deg); /* ALTERADO: Rotação para 45deg (positivo) */
             font-size: 14px;
             color: #666;
-            text-align: left; /* Alterado para 'left' para alinhar o texto inclinado à esquerda */
+            text-align: left;
             white-space: normal;
             word-wrap: break-word;
             max-width: 150px;
             z-index: 2;
             line-height: 1.2em;
-            transform-origin: bottom center; /* Define o ponto de rotação na parte inferior central da label */
-            padding-right: 20px;
+            transform-origin: bottom center;
+            padding-right: 0px;
         }
         .timeline-event-label > * {
             margin: 2px 0;
@@ -550,7 +550,7 @@
                             .timeline-year {
                                 position: absolute;
                                 top: -30px;
-                                transform: translateX(-50%);
+                                transform: translateX(-0%);
                                 font-size: 16px;
                                 font-weight: 500;
                                 color: #333;
@@ -601,19 +601,19 @@
                             }
                             .timeline-event-label {
                                 position: absolute;
-                                top: -800px;
+                                top: -32px;
                                 left: 20%;
-                                transform: translateX(-50%) rotate(-45deg); /* ADICIONADO rotate(-45deg) */
+                                transform: translateX(0%) rotate(-45deg); /* ALTERADO: Rotação para 45deg (positivo) */
                                 font-size: 14px;
                                 color: #666;
-                                text-align: left; /* Alterado para 'left' para alinhar o texto inclinado à esquerda */
+                                text-align: left;
                                 white-space: normal;
                                 word-wrap: break-word;
                                 max-width: 150px;
                                 z-index: 2;
                                 line-height: 1.2em;
-                                transform-origin: bottom center; /* Define o ponto de rotação na parte inferior central da label */
-                                padding-right: 20px;
+                                transform-origin: bottom center;
+                                padding-right: 0px;
                             }
                             .timeline-event-label > * {
                                 margin: 2px 0;
