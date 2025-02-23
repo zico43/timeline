@@ -230,8 +230,8 @@
         }
         .timeline-section {
             width: 100%;
-            padding: 40px 20px 150px 20px; /* Padding-bottom mantido para espaço */
-            margin-top: 30px;
+            padding: 150px 20px 40px 20px;
+            margin-top: 150px;
             background-color: #f8f8f8;
             border-radius: 12px;
         }
@@ -240,7 +240,7 @@
             width: 100%;
             height: 4px;
             background-color: #ddd;
-            margin: 40px 0;
+            margin: 80px 0;
             padding: 0 20px;
         }
         .timeline-line {
@@ -295,29 +295,30 @@
         .timeline-event::before {
             content: '';
             position: absolute;
-            top: 50%; /* Mudança: Linha tracejada para cima */
+            top: -45px;
             left: 50%;
             width: 1px;
-            height: 75px; /* Altura da linha tracejada mantida */
+            height: 45px;
             border-left: 1px dashed #666;
             z-index: 0;
         }
         .timeline-event-label {
-            position: absolute; /* Importante para o JS manipular a posição */
-            top: calc(50% + 75px); /* Mudança: Posição inicial ACIMA */
+            position: absolute;
+            top: -100px; /* ALTERADO PARA 30px (VALOR POSITIVO) */
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%); rotate(-45deg); /* ADICIONADO rotate(-45deg) */
             font-size: 14px;
             color: #666;
-            text-align: center;
+            text-align: left; /* Alterado para 'left' para alinhar o texto inclinado à esquerda */
             white-space: normal;
             word-wrap: break-word;
             max-width: 150px;
-            z-index: 2; /* Garante que os labels fiquem acima da linha */
+            z-index: 2;
             line-height: 1.2em;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: flex-start; /* Alterado para 'flex-start' para alinhar o conteúdo à esquerda dentro da label */
+            transform-origin: bottom center; /* Define o ponto de rotação na parte inferior central da label */
         }
         .timeline-event-label > * {
             margin: 2px 0;
@@ -325,11 +326,6 @@
         .timeline-event:nth-child(even) .timeline-event-label {
             bottom: auto; /* Remove bottom para o JS controlar */
             top: auto;    /* Remove top para o JS controlar */
-        }
-        .timeline-event:nth-child(even)::before {
-            bottom: auto;
-            top: 50%;
-            height: 75px;
         }
         .timeline-event:hover {
             background-color: #333;
@@ -530,7 +526,7 @@
                         <style>
                             .timeline-section {
                                 width: 100%;
-                                padding: 40px 20px 150px 20px; /* Padding-bottom mantido para espaço */
+                                padding: 40px 20px 150px 20px;
                                 margin-top: 30px;
                                 background-color: #f8f8f8;
                                 border-radius: 12px;
@@ -581,6 +577,7 @@
                             }
                             .timeline-dot.end {
                                 right: 20px;
+                                transform: translateX(50%);
                             }
                             .timeline-event {
                                 position: absolute;
@@ -595,29 +592,30 @@
                             .timeline-event::before {
                                 content: '';
                                 position: absolute;
-                                top: 50%; /* Mudança: Linha tracejada para cima */
+                                top: -45px;
                                 left: 50%;
                                 width: 1px;
-                                height: 75px; /* Altura da linha tracejada mantida */
+                                height: 45px;
                                 border-left: 1px dashed #666;
                                 z-index: 0;
                             }
                             .timeline-event-label {
-                                position: absolute; /* Importante para o JS manipular a posição */
-                                top: calc(50% + 75px); /* Mudança: Posição inicial ACIMA */
+                                position: absolute;
+                                top: -100px;
                                 left: 50%;
-                                transform: translateX(-50%);
+                                transform: translateX(-50%); rotate(-45deg); /* ADICIONADO rotate(-45deg) */
                                 font-size: 14px;
                                 color: #666;
-                                text-align: center;
+                                text-align: left; /* Alterado para 'left' para alinhar o texto inclinado à esquerda */
                                 white-space: normal;
                                 word-wrap: break-word;
                                 max-width: 150px;
-                                z-index: 2; /* Garante que os labels fiquem acima da linha */
+                                z-index: 2;
                                 line-height: 1.2em;
                                 display: flex;
                                 flex-direction: column;
-                                align-items: center;
+                                align-items: flex-start; /* Alterado para 'flex-start' para alinhar o conteúdo à esquerda dentro da label */
+                                transform-origin: bottom center; /* Define o ponto de rotação na parte inferior central da label */
                             }
                             .timeline-event-label > * {
                                 margin: 2px 0;
@@ -626,11 +624,12 @@
                                 bottom: auto; /* Remove bottom para o JS controlar */
                                 top: auto;    /* Remove top para o JS controlar */
                             }
-                            .timeline-event:nth-child(even)::before {
+                            /* REMOVED THIS BLOCK - LINES WILL NOW POINT UPWARDS FOR ALL EVENTS */
+                            /*.timeline-event:nth-child(even)::before {
                                 bottom: auto;
                                 top: 50%;
-                                height: 75px;
-                            }
+                                height: 45px;
+                            }*/
                             .timeline-event:hover {
                                 background-color: #333;
                             }
@@ -671,7 +670,7 @@
                             </div>
                         </div>
                         <div class="timeline-section">
-                            <h2 style="margin-bottom: 20px;">Linha do Tempo</h2>
+                            <h2 style="margin-bottom: 250px;">Linha do Tempo</h2>
                             <div class="timeline-container">
                                 <div class="timeline-line"></div>
                                 <div class="timeline-dot start"></div>
@@ -739,35 +738,24 @@
                             // Check for overlap with previous labels
                             for (let i = 0; i < index; i++) {
                                 const prevLabelRect = labels[i].getBoundingClientRect();
-                                if (labelRect.intersects(prevLabelRect)) {
+                                if (!(labelRect.right < prevLabelRect.left || 
+                                    labelRect.left > prevLabelRect.right || 
+                                    labelRect.bottom < prevLabelRect.top || 
+                                    labelRect.top > prevLabelRect.bottom)) {
                                     isOverlapping = true;
                                     break;
                                 }
                             }
 
                             if (isOverlapping) {
-                                // Try to move label down first
-                                label.style.top = 'auto';
-                                label.style.bottom = `${75}px`; // Initial bottom position
-
-                                const newLabelRect = label.getBoundingClientRect();
-                                let isStillOverlapping = false;
-                                for (let i = 0; i < index; i++) {
-                                    const prevLabelRect = labels[i].getBoundingClientRect();
-                                    if (newLabelRect.intersects(prevLabelRect)) {
-                                        isStillOverlapping = true;
-                                        break;
-                                    }
+                                    // Move label down when overlapping
+                                    label.style.bottom = `${45}px`; // Define bottom position para mover para baixo
+                                    label.style.top = 'auto';       // Remove qualquer 'top' definido anteriormente
+                                } else {
+                                    // If not overlapping, reset to default TOP position (for cima)
+                                    label.style.top = `-100px`;      // Define 'top' para valor negativo (para cima) - ajusta se precisares
+                                    label.style.bottom = 'auto';     // Remove qualquer 'bottom' definido anteriormente
                                 }
-                                if (isStillOverlapping) {
-                                    // If still overlapping after moving down, force move further down (or implement more complex logic)
-                                    label.style.bottom = `${150}px`; // Move further down as fallback
-                                }
-                            } else {
-                                // If not overlapping, reset to default top position
-                                label.style.top = `${75}px`;
-                                label.style.bottom = 'auto';
-                            }
                         });
                     }
 
@@ -1045,16 +1033,24 @@
         }
 
         // --- Intersection Observer polyfill for browsers that do not support it ---
-        (function(global, factory) {
-            typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-            typeof define === 'function' && define.amd ? define(factory) :
-            (global.IntersectionObserver = factory());
-        }(this, (function() {
-            'use strict';
-            // ... (polyfill code - keep it if you need IE support, otherwise you can remove it) ...
-        })));
+        if (!('IntersectionObserver' in window)) {
+            (function(global, factory) {
+                if (typeof exports === 'object' && typeof module !== 'undefined') {
+                    module.exports = factory();
+                } else if (typeof define === 'function' && define.amd) {
+                    define(factory);
+                } else {
+                    global.IntersectionObserver = factory();
+                }
+            }(typeof window !== 'undefined' ? window : this, function() {
+                'use strict';
+                // Intersection Observer polyfill implementation would go here
+                return function IntersectionObserver() {};
+            }));
+        }
 
 
     </script>
 </body>
 </html>
+
