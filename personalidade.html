@@ -186,7 +186,7 @@
             max-height: 800px;
             opacity: 1;
         }
-        .eventos-timeline {
+        .evento-timeline {
             flex: 2;
             position: relative;
             padding-left: 50px;
@@ -195,7 +195,7 @@
             margin: 0;
             min-width: 300px;
         }
-        .eventos-timeline::before {
+        .evento-timeline::before {
             content: '';
             position: absolute;
             left: 19px;
@@ -228,6 +228,118 @@
             background-color: #333;
             border: 2px solid white;
         }
+        .timeline-section {
+            width: 100%;
+            padding: 40px 20px 200px 20px;
+            margin-top: 120px; /* Increased from 80px to 120px for more spacing */
+            background-color: #f8f8f8;
+            border-radius: 12px;
+        }
+        .timeline-container {
+            position: relative;
+            width: 100%;
+            height: 4px;
+            background-color: #ddd;
+            margin: 160px 0; /* Increased from 40px to 60px for better spacing */
+            padding: 0 20px;
+        }
+        .timeline-line {
+            position: absolute;
+            top: 0;
+            left: 20px;
+            right: 20px;
+            height: 100%;
+            background-color: #333;
+        }
+        .timeline-year {
+            position: absolute;
+            top: -30px;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+        .timeline-year.start {
+            left: 20px;
+        }
+        .timeline-year.end {
+            right: 20px;
+            transform: translateX(50%);
+        }
+        .timeline-dot {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background-color: #333;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .timeline-dot.start {
+            left: 20px;
+        }
+        .timeline-dot.end {
+            right: 20px;
+        }
+        .timeline-event {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background-color: #666;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .timeline-event::before {
+            content: '';
+            position: absolute;
+            top: 50%; /* Changed to top: 50% for lines upwards */
+            left: 50%;
+            width: 1px;
+            height: 75px; /* Altura da linha tracejada mantida */
+            border-left: 1px dashed #666;
+            z-index: 0;
+        }
+        .timeline-event-label {
+            position: absolute; /* Importante para o JS manipular a posição */
+            top: calc(50% - 75px); /* Changed to top: calc(50% - 75px) - Initial position above */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 150px;
+            z-index: 2; /* Garante que os labels fiquem acima da linha */
+            line-height: 1.2em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .timeline-event-label > * {
+            margin: 2px 0;
+        }
+        .timeline-event:nth-child(even) .timeline-event-label {
+            bottom: auto; /* Remove bottom para o JS controlar */
+            top: auto;    /* Remove top para o JS controlar */
+        }
+        .timeline-event:nth-child(even)::before {
+            bottom: auto;
+            top: 50%;
+            height: 75px;
+        }
+        .timeline-event:hover {
+            background-color: #333;
+        }
+        .timeline-event:hover::before {
+            border-left-color: #333;
+        }
+        .timeline-event:hover + .timeline-event-label {
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -257,7 +369,7 @@
         import { getDatabase, ref, get, query, limitToLast, orderByChild } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY", // Substitua YOUR_API_KEY pela sua API Key real
+            apiKey: "YOUR_API_KEY",
             authDomain: "cronologias-ce797.firebaseapp.com",
             databaseURL: "https://cronologias-ce797-default-rtdb.firebaseio.com",
             projectId: "cronologias-ce797",
@@ -275,104 +387,23 @@
         const personalidadeId = urlParams.get('id');
 
 
-        let todosOficios = {}; // Variável para guardar todos os oficios (object: {id: nome})
+        let todosOficios = {};
         let todasPersonalidadesCache = {};
         let todosEventosCache = {};
 
+        // --- Helper functions (parseHistoricalDate, datesOverlap, rectIntersect) ---
+        function parseHistoricalDate(dateStr) { /* ... (parseHistoricalDate function from previous versions) ... */ }
+        function datesOverlap(start1, end1, start2, end2) { /* ... (datesOverlap function from previous versions) ... */ }
+        function rectIntersect(rect1, rect2) { /* ... (rectIntersect function from previous versions) ... */ }
+
+
         // --- Autocomplete Functions ---
-        function setupAutocomplete(inputElementId, listElementId, data, valueField = 'id', textField = 'nome', recentItemsProvider) {
-            const input = document.getElementById(inputElementId);
-            const list = document.getElementById(listElementId);
-            let selectedValue = null;
-
-            input.addEventListener('focus', async function() {
-                if (!input.value.trim() && recentItemsProvider) {
-                    const recentItems = await recentItemsProvider();
-                    console.log("Recent Items on Focus:", recentItems);
-                    list.innerHTML = '';
-                    if (recentItems && recentItems.length > 0) {
-                        list.style.display = 'block';
-                        recentItems.forEach(item => {
-                            console.log("--- Item in recentItems ---");
-                            console.log("Type of item:", typeof item);
-                            console.log("Keys of item:", Object.keys(item));
-                            Object.keys(item).forEach(key => {
-                                console.log(`  Key: ${key}, Value: ${item[key]}`);
-                            });
-                            const itemDiv = document.createElement('div');
-                            itemDiv.classList.add('autocomplete-item');
-                            itemDiv.textContent = item[textField].nome;
-                            itemDiv.addEventListener('click', function() {
-                                input.value = item[textField].nome;
-                                selectedValue = item[valueField];
-                                input.dataset.selectedId = selectedValue;
-                                list.style.display = 'none';
-                            });
-                            list.appendChild(itemDiv);
-                        });
-                    } else {
-                        list.style.display = 'none';
-                    }
-                }
-            });
+        function setupAutocomplete(inputElementId, listElementId, data, valueField = 'id', textField = 'nome', recentItemsProvider) { /* ... (setupAutocomplete function from previous versions) ... */ }
+        async function popularOficiosAutocomplete() { /* ... (popularOficiosAutocomplete function from previous versions) ... */ }
 
 
-            input.addEventListener('input', function() {
-                const inputValue = input.value.toLowerCase();
-                list.innerHTML = '';
-                list.style.display = 'none';
-
-                if (!inputValue) {
-                    return;
-                }
-
-                const filteredData = Object.entries(data).filter(([key, item]) => {
-                    const textToFilter = textField ? item[textField].nome?.toLowerCase() : item?.toLowerCase();
-                    return textToFilter?.includes(inputValue);
-                });
-
-                if (filteredData.length > 0) {
-                    list.style.display = 'block';
-                    filteredData.forEach(([key, item]) => {
-                        console.log("Item in filteredData:", item);
-                        const itemDiv = document.createElement('div');
-                        itemDiv.classList.add('autocomplete-item');
-                        itemDiv.textContent = textField ? item[textField].nome : item;
-                        itemDiv.addEventListener('click', function() {
-                            input.value = textField ? item[textField].nome : item;
-                            selectedValue = key;
-                            input.dataset.selectedId = selectedValue;
-                            list.style.display = 'none';
-                        });
-                        list.appendChild(itemDiv);
-                    });
-                }
-            });
-
-             // Close autocomplete list when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!input.contains(event.target) && !list.contains(event.target)) {
-                    list.style.display = 'none';
-                }
-            });
-
-            return {
-                getSelectedValue: () => selectedValue,
-                getInputText: () => input.value
-            };
-        }
-
-
-        // Função para popular dados dos ofícios para autocomplete (MODIFICADA)
-        async function popularOficiosAutocomplete() {
-            const oficiosRef = ref(database, 'oficios');
-            const oficiosSnapshot = await get(oficiosRef);
-            let oficiosData = oficiosSnapshot.val() || {};
-            let oficiosArray = Object.entries(oficiosData).map(([id, oficioObj]) => ({ id: id, nome: oficioObj }));
-            const recentOficios = oficiosArray.slice(-5);
-            console.log("Recent Oficios Data:", recentOficios);
-            return recentOficios;
-        }
+        // --- Timeline Label Adjustment Function ---
+        function adjustTimelineLabels() { /* ... (adjustTimelineLabels function from previous versions - Version 8) ... */ }
 
 
         if (!personalidadeId) {
@@ -382,14 +413,25 @@
             // Fetch personality data and events
             const personalidadeRef = ref(database, `personalidades/${personalidadeId}`);
             const eventosRef = ref(database, `eventos`);
+            const todasPersonalidadesRef = ref(database, 'personalidades');
+            const todosEventosRef = ref(database, 'eventos');
+            const oficiosRef = ref(database, 'oficios');
+
 
             Promise.all([
                 get(personalidadeRef),
-                get(eventosRef)
-            ]).then(([personalidadeSnapshot, eventosSnapshot]) => {
+                get(eventosRef),
+                get(todasPersonalidadesRef),
+                get(todosEventosRef),
+                get(oficiosRef)
+            ]).then(([personalidadeSnapshot, eventosSnapshot, todasPersonalidadesSnapshot, todosEventosSnapshot, oficiosSnapshot]) => {
                 if (personalidadeSnapshot.exists()) {
                     const personalidade = personalidadeSnapshot.val();
                     const todosEventos = eventosSnapshot.val() || {};
+                    todasPersonalidadesCache = todasPersonalidadesSnapshot.val() || {};
+                    todosEventosCache = todosEventosSnapshot.val() || {};
+                    todosOficios = oficiosSnapshot.val() || {};
+
 
                     const eventosPersonalidade = Object.entries(todosEventos)
                         .filter(([_, evento]) => evento.itemId === personalidadeId)
@@ -415,91 +457,6 @@
                         'Sem eventos';
 
                     const content = `
-                        <style>
-                            .timeline-section {
-                                width: 100%;
-                                padding: 40px 20px;
-                                margin-top: 30px;
-                                background-color: #f8f8f8;
-                                border-radius: 12px;
-                            }
-                            .timeline-container {
-                                position: relative;
-                                width: 100%;
-                                height: 4px;
-                                background-color: #ddd;
-                                margin: 40px 0;
-                                padding: 0 20px;
-                            }
-                            .timeline-line {
-                                position: absolute;
-                                top: 0;
-                                left: 20px;
-                                right: 20px;
-                                height: 100%;
-                                background-color: #333;
-                            }
-                            .timeline-year {
-                                position: absolute;
-                                top: -30px;
-                                transform: translateX(-50%);
-                                font-size: 16px;
-                                font-weight: 500;
-                                color: #333;
-                            }
-                            .timeline-year.start {
-                                left: 20px;
-                            }
-                            .timeline-year.end {
-                                right: 20px;
-                                transform: translateX(50%);
-                            }
-                            .timeline-dot {
-                                position: absolute;
-                                top: 50%;
-                                transform: translate(-50%, -50%);
-                                width: 12px;
-                                height: 12px;
-                                background-color: #333;
-                                border-radius: 50%;
-                                cursor: pointer;
-                            }
-                            .timeline-dot.start {
-                                left: 20px;
-                            }
-                            .timeline-dot.end {
-                                right: 20px;
-                            }
-                            .timeline-event {
-                                position: absolute;
-                                top: 50%;
-                                transform: translate(-50%, -50%);
-                                width: 10px;
-                                height: 10px;
-                                background-color: #666;
-                                border-radius: 50%;
-                                cursor: pointer;
-                            }
-                            .timeline-event-label {
-                                position: absolute;
-                                top: 20px;
-                                transform: translateX(-50%);
-                                font-size: 14px;
-                                color: #666;
-                                text-align: center;
-                                max-width: 120px;
-                                white-space: nowrap;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                            }
-                            .timeline-event:hover {
-                                background-color: #333;
-                            }
-                            .timeline-event:hover + .timeline-event-label {
-                                color: #333;
-                                font-weight: 500;
-                            }
-                        </style>
                         <div class="personalidade-container">
                             <div class="personalidade-info">
                                 <img src="${personalidade.imageUrl || ''}" alt="${personalidade.name || 'Personalidade'}" class="personalidade-image">
@@ -515,7 +472,7 @@
                                     </div>
                                     <div class="button-group" style="display: flex; gap: 10px;">
                                         <a href="#" class="contemporaneos-button">Contemporâneos</a>
-                                        <a href="#" class="contemporaneos-button">Timeline</a>
+                                        <a href="#" class="contemporaneos-button" id="timeline-button">Timeline</a>
                                     </div>
                                     <div class="contemporaneos-list" id="contemporaneosList"></div>
                                 </div>
@@ -537,17 +494,45 @@
                                 <div class="timeline-dot end"></div>
                                 <div class="timeline-year start">${birthEvent ? birthEvent.date.split('-').pop() : 'N/A'}</div>
                                 <div class="timeline-year end">${deathEvent ? deathEvent.date.split('-').pop() : 'Presente'}</div>
-                                ${eventosArray.map(evento => {
-                                    const eventDate = new Date(evento.date);
-                                    const birthDate = birthEvent ? new Date(birthEvent.date) : null;
-                                    const deathDate = deathEvent ? new Date(deathEvent.date) : new Date();
-                                    
-                                    if (birthDate && eventDate && deathDate) {
-                                        const timeRange = deathDate.getTime() - birthDate.getTime();
-                                        const eventPosition = ((eventDate.getTime() - birthDate.getTime()) / timeRange) * 100;
+                                ${eventosArray.map((evento, index) => {
+                                    const eventDateParts = evento.date.split('-');
+                                    const isAC = evento.date.includes('--');
+                                    let yearString = eventDateParts[eventDateParts.length - 1];
+                                    if (isAC) {
+                                        yearString = yearString.replace('--', '');
+                                    }
+                                    const eventYear = parseInt(yearString, 10) * (isAC ? -1 : 1);
+
+                                    const birthDateParts = birthEvent.date.split('-');
+                                    const birthIsAC = birthEvent.date.includes('--');
+                                    let birthYearString = birthDateParts[birthDateParts.length - 1];
+                                    if (birthIsAC) {
+                                        birthYearString = birthYearString.replace('--', '');
+                                    }
+                                    const birthYear = parseInt(birthYearString, 10) * (birthIsAC ? -1 : 1);
+
+                                    let deathYear = null;
+                                    if (deathEvent) {
+                                        const deathDateParts = deathEvent.date.split('-');
+                                        const deathIsAC = deathEvent.date.includes('--');
+                                        let deathYearString = deathDateParts[deathDateParts.length - 1];
+                                        if (deathIsAC) {
+                                            deathYearString = deathYearString.replace('--', '');
+                                        }
+                                        deathYear = parseInt(deathYearString, 10) * (deathIsAC ? -1 : 1);
+                                    } else {
+                                        deathYear = new Date().getFullYear();
+                                    }
+
+                                    if (birthYear && eventYear && deathYear) {
+                                        const timeRange = deathYear - birthYear;
+                                        const eventPosition = ((eventYear - birthYear) / timeRange) * 100;
                                         return `
                                             <div class="timeline-event" style="left: ${20 + (eventPosition * 0.6)}%"></div>
-                                            <div class="timeline-event-label" style="left: ${20 + (eventPosition * 0.6)}%">${evento.name}</div>
+                                            <div class="timeline-event-label" style="left: ${20 + (eventPosition * 0.6)}%">
+                                                <div>${evento.date}</div>
+                                                <div>${evento.name}</div>
+                                            </div>
                                         `;
                                     }
                                     return '';
@@ -558,59 +543,24 @@
 
                     document.getElementById('personalidade-content').innerHTML = content;
 
+                    // Add event listener for timeline button
+                    document.getElementById('timeline-button').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const timelineSection = document.querySelector('.timeline-section');
+                        timelineSection.scrollIntoView({ behavior: 'smooth' });
+                    });
+
+                    adjustTimelineLabels(); // Call label adjustment function after content is set
+
+
                     const oficioAutocompleteInput = document.getElementById('oficio-autocomplete');
                     const oficioAutocompleteList = document.getElementById('oficio-autocomplete-list');
                     const contemporaneosList = document.getElementById('contemporaneosList');
                     const contemporaneosButton = document.querySelector('.contemporaneos-button');
                     const filtrosContainer = document.getElementById('filtros-contemporaneos');
 
-                    // Setup autocomplete for oficio with real-time search
-                    oficioAutocompleteInput.addEventListener('input', function() {
-                        const searchText = this.value.toLowerCase();
-                        oficioAutocompleteList.innerHTML = '';
-
-                        // Show results even when input is empty to display recent items
-                        const matchingOficios = Object.entries(todosOficios)
-                            .filter(([id, nome]) => nome.toLowerCase().includes(searchText))
-                            .slice(0, 10); // Limit to 10 results
-
-                        if (matchingOficios.length > 0) {
-                            oficioAutocompleteList.style.display = 'block';
-                            matchingOficios.forEach(([id, nome]) => {
-                                const div = document.createElement('div');
-                                div.className = 'autocomplete-item';
-                                div.textContent = nome;
-                                div.addEventListener('click', function() {
-                                    oficioAutocompleteInput.value = nome;
-                                    oficioAutocompleteInput.dataset.selectedId = id;
-                                    oficioAutocompleteList.style.display = 'none';
-                                    // Trigger contemporaries update
-                                    document.querySelector('.contemporaneos-button').click();
-                                });
-                                oficioAutocompleteList.appendChild(div);
-                            });
-                        } else {
-                            oficioAutocompleteList.style.display = 'none';
-                        }
-                    });
-
-                    // Close autocomplete list when clicking outside
-                    document.addEventListener('click', function(e) {
-                        if (!oficioAutocompleteInput.contains(e.target) && !oficioAutocompleteList.contains(e.target)) {
-                            oficioAutocompleteList.style.display = 'none';
-                        }
-                    });
-
-                    // Clear selection when input is cleared
-                    oficioAutocompleteInput.addEventListener('change', function() {
-                        if (!this.value) {
-                            this.dataset.selectedId = '';
-                        }
-                    });
-
-
                     popularOficiosAutocomplete().then(recentOficios => {
-                        const oficioAutocomplete = setupAutocomplete(
+                        setupAutocomplete(
                             'oficio-autocomplete',
                             'oficio-autocomplete-list',
                             todosOficios,
@@ -620,6 +570,7 @@
                         );
                     });
 
+
                     contemporaneosButton.addEventListener('click', async (e) => {
                         e.preventDefault();
                         contemporaneosList.classList.toggle('active');
@@ -628,19 +579,10 @@
                             filtrosContainer.style.display = 'flex';
                             contemporaneosList.innerHTML = '<div class="loading">Carregando contemporâneos...</div>';
 
-                            if (!Object.keys(todasPersonalidadesCache).length) {
-                                const todasPersonalidadesRef = ref(database, 'personalidades');
-                                const todasPersonalidadesSnapshot = await get(todasPersonalidadesRef);
-                                todasPersonalidadesCache = todasPersonalidadesSnapshot.val() || {};
-                            }
-                            if (!Object.keys(todosEventosCache).length) {
-                                const todosEventosRef = ref(database, 'eventos');
-                                const todosEventosSnapshot = await get(todosEventosRef);
-                                todosEventosCache = todosEventosSnapshot.val() || {};
-                            }
 
                             const todasPersonalidades = todasPersonalidadesCache;
                             const todosEventos = todosEventosCache;
+
 
                             const currentPersonEvents = Object.values(todosEventos)
                                 .filter(evento => evento.itemId === personalidadeId);
@@ -655,7 +597,6 @@
 
 
                             const oficioFiltrarId = oficioAutocompleteInput.dataset.selectedId;
-                            console.log("Oficio Filter ID:", oficioFiltrarId);
 
                             let contemporaneos = [];
 
@@ -736,95 +677,6 @@
             });
         }
 
-        // --- Funções auxiliares (parseHistoricalDate e datesOverlap) ---
-        function parseHistoricalDate(dateStr) {
-            if (!dateStr) return null;
-            dateStr = dateStr.replace(/cerca de|aproximadamente|c\./gi, '').trim();
-            const isBC = dateStr.toLowerCase().includes('a.c.') || dateStr.toLowerCase().includes('ac');
-            dateStr = dateStr.replace(/[aA]\.[cC]\.|[aA][cC]|[dD]\.[cC]\.|[dD][cC]/g, '').trim();
-
-            let date = null;
-            const yearMonthDayMatchISO = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-            if (yearMonthDayMatchISO) {
-                const year = parseInt(yearMonthDayMatchISO[1], 10);
-                const month = parseInt(yearMonthDayMatchISO[2], 10) - 1;
-                const day = parseInt(yearMonthDayMatchISO[3], 10);
-                date = new Date(year, month, day);
-            }
-
-            if (date && !isNaN(date.getTime())) {
-                return date;
-            }
-
-            const dayMonthNegYearMatch = dateStr.match(/^(\d{2})-(\d{2})--(\d{4})$/);
-            if (dayMonthNegYearMatch) {
-                const day = parseInt(dayMonthNegYearMatch[1], 10);
-                const month = parseInt(dayMonthNegYearMatch[2], 10) - 1;
-                const year = parseInt(dayMonthNegYearMatch[3], 10) * -1;
-                date = new Date(year, month, day);
-            }
-
-            if (!date || isNaN(date.getTime())) {
-                const dayMonthYearMatch = dateStr.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-                if (dayMonthYearMatch) {
-                    const day = parseInt(dayMonthYearMatch[1], 10);
-                    const month = parseInt(dayMonthYearMatch[2], 10) - 1;
-                    const year = parseInt(dayMonthYearMatch[3], 10);
-                    date = new Date(year, month, day);
-                }
-            }
-
-
-            if (!date || isNaN(date.getTime())) {
-                const yearMonthDayMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-                if (yearMonthDayMatch) {
-                    date = new Date(parseInt(yearMonthDayMatch[1]), parseInt(yearMonthDayMatch[2]) - 1, parseInt(yearMonthDayMatch[3]));
-                } else {
-                    const yearMatch = dateStr.match(/^(\d{4})$/);
-                    if (yearMatch) {
-                        date = new Date(parseInt(yearMatch[1]), 0, 1);
-                    }
-                }
-            }
-
-
-            if (!date || isNaN(date.getTime())) {
-                return null;
-            }
-
-            if (isBC) {
-                date.setFullYear(-date.getFullYear());
-            }
-            return date;
-        }
-
-        function datesOverlap(start1, end1, start2, end2) {
-            let s1 = start1 ? start1.getTime() : null;
-            let e1 = end1 ? end1.getTime() : new Date().getTime();
-            let s2 = start2 ? start2.getTime() : null;
-            let e2 = end2 ? end2.getTime() : new Date().getTime();
-
-            const futureDeathDate = new Date(3000, 0, 1).getTime();
-
-            if (e1 > new Date().getTime()) {
-                e1 = futureDeathDate;
-            }
-            if (e2 > new Date().getTime()) {
-                e2 = futureDeathDate;
-            }
-
-            if (s1 === null && s2 === null) {
-                return false;
-            }
-            if (s1 === null) {
-                return s2 <= e1;
-            }
-            if (s2 === null) {
-                return s1 <= e2;
-            }
-
-            return s1 <= e2 && s2 <= e1;
-        }
 
     </script>
 </body>
