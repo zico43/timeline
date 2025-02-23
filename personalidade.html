@@ -231,7 +231,7 @@
         .timeline-section {
             width: 100%;
             padding: 150px 20px 40px 20px;
-            margin-top: 150px;
+            margin-top: 300px;
             background-color: #f8f8f8;
             border-radius: 12px;
         }
@@ -304,9 +304,9 @@
         }
         .timeline-event-label {
             position: absolute;
-            top: -100px; /* ALTERADO PARA 30px (VALOR POSITIVO) */
-            left: 50%;
-            transform: translateX(-50%); rotate(-45deg); /* ADICIONADO rotate(-45deg) */
+            top: -800px; /* ALTERADO PARA 30px (VALOR POSITIVO) */
+            left: 20%;
+            transform: translateX(-50%) rotate(-45deg); /* ADICIONADO rotate(-45deg) */
             font-size: 14px;
             color: #666;
             text-align: left; /* Alterado para 'left' para alinhar o texto inclinado à esquerda */
@@ -315,13 +315,13 @@
             max-width: 150px;
             z-index: 2;
             line-height: 1.2em;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start; /* Alterado para 'flex-start' para alinhar o conteúdo à esquerda dentro da label */
             transform-origin: bottom center; /* Define o ponto de rotação na parte inferior central da label */
+            padding-right: 20px;
         }
         .timeline-event-label > * {
             margin: 2px 0;
+            font-size: 14px; /* Tamanho da fonte - ajuste se necessário */
+            white-space: nowrap; /* Garante que data e nome ficam na mesma linha */
         }
         .timeline-event:nth-child(even) .timeline-event-label {
             bottom: auto; /* Remove bottom para o JS controlar */
@@ -527,7 +527,7 @@
                             .timeline-section {
                                 width: 100%;
                                 padding: 40px 20px 150px 20px;
-                                margin-top: 30px;
+                                margin-top: 300px;
                                 background-color: #f8f8f8;
                                 border-radius: 12px;
                             }
@@ -601,9 +601,9 @@
                             }
                             .timeline-event-label {
                                 position: absolute;
-                                top: -100px;
-                                left: 50%;
-                                transform: translateX(-50%); rotate(-45deg); /* ADICIONADO rotate(-45deg) */
+                                top: -800px;
+                                left: 20%;
+                                transform: translateX(-50%) rotate(-45deg); /* ADICIONADO rotate(-45deg) */
                                 font-size: 14px;
                                 color: #666;
                                 text-align: left; /* Alterado para 'left' para alinhar o texto inclinado à esquerda */
@@ -612,13 +612,13 @@
                                 max-width: 150px;
                                 z-index: 2;
                                 line-height: 1.2em;
-                                display: flex;
-                                flex-direction: column;
-                                align-items: flex-start; /* Alterado para 'flex-start' para alinhar o conteúdo à esquerda dentro da label */
                                 transform-origin: bottom center; /* Define o ponto de rotação na parte inferior central da label */
+                                padding-right: 20px;
                             }
                             .timeline-event-label > * {
                                 margin: 2px 0;
+                                font-size: 14px;
+                                white-space: nowrap;
                             }
                             .timeline-event:nth-child(even) .timeline-event-label {
                                 bottom: auto; /* Remove bottom para o JS controlar */
@@ -713,8 +713,7 @@
                                         return `
                                             <div class="timeline-event" style="left: ${20 + (eventPosition * 0.6)}%"></div>
                                             <div class="timeline-event-label" style="left: ${20 + (eventPosition * 0.6)}%">
-                                                <div>${evento.date}</div>  <!-- Data em cima -->
-                                                <div>${evento.name}</div>  <!-- Nome em baixo -->
+                                                <div>${evento.date} - ${evento.name}</div>
                                             </div>
                                         `;
                                     }
@@ -738,9 +737,9 @@
                             // Check for overlap with previous labels
                             for (let i = 0; i < index; i++) {
                                 const prevLabelRect = labels[i].getBoundingClientRect();
-                                if (!(labelRect.right < prevLabelRect.left || 
-                                    labelRect.left > prevLabelRect.right || 
-                                    labelRect.bottom < prevLabelRect.top || 
+                                if (!(labelRect.right < prevLabelRect.left ||
+                                    labelRect.left > prevLabelRect.right ||
+                                    labelRect.bottom < prevLabelRect.top ||
                                     labelRect.top > prevLabelRect.bottom)) {
                                     isOverlapping = true;
                                     break;
@@ -1053,4 +1052,3 @@
     </script>
 </body>
 </html>
-
